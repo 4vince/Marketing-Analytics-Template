@@ -1,3 +1,4 @@
+// Products listing page — fetches active products with optional search and category filters.
 import Link from "next/link";
 import ProductGrid from "@/components/storefront/ProductGrid";
 import { prisma } from "@/lib/prisma";

@@ -1,3 +1,4 @@
+// Contact Us page — static contact form (name, email, message) with no backend handler.
 export default function ContactPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-16">

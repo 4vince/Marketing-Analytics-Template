@@ -1,3 +1,4 @@
+// About Us page — static informational page with placeholder brand copy.
 export default function AboutPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-16">

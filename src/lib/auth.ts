@@ -1,3 +1,4 @@
+// NextAuth configuration with email/password credentials provider and JWT session strategy.
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "./prisma";

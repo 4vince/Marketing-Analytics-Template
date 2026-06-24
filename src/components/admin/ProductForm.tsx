@@ -1,3 +1,4 @@
+// Product creation/editing form — fields for name, description, price, category, images, status.
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";

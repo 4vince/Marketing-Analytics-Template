@@ -1,3 +1,4 @@
+// Site footer with copyright notice and current year.
 export default function Footer() {
   return (
     <footer className="border-t py-8 mt-auto">

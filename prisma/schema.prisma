@@ -1,3 +1,4 @@
+// Database schema definition for PostgreSQL. Defines all models: User, Product, Order, AnalysisResult, QuarterlyReport, PageContent, ChatConversation, ChatMessage.
 generator client {
   provider = "prisma-client-js"
 }

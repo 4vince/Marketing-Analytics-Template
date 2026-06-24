@@ -1,3 +1,4 @@
+# Analysis orchestrator — runs all three agents (ContentQuality, SEO, ProductPage) on product data.
 from agents.base import AnalysisResult
 from agents.content_quality import ContentQualityAgent
 from agents.seo import SEOAgent

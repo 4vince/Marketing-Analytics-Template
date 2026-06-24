@@ -1,3 +1,4 @@
+// Product detail page — fetches product by slug, shows image, price, description, and add-to-cart.
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import AddToCartButton from "./AddToCartButton";

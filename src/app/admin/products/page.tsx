@@ -1,3 +1,4 @@
+// Admin products list — table of all products with edit, delete, and add-new actions.
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import DeleteButton from "./DeleteButton";

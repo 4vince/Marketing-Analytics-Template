@@ -1,3 +1,4 @@
+// Product detail loading skeleton — animated pulse placeholders for image and details.
 export default function ProductDetailLoading() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

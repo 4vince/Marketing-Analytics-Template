@@ -1,3 +1,4 @@
+// Responsive product grid layout — renders ProductCard components or empty-state message.
 import ProductCard from "./ProductCard";
 
 interface ProductGridProps {

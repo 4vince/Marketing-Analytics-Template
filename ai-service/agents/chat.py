@@ -1,3 +1,4 @@
+# Storefront chat agent — answers customer questions using the LLM with the product catalog as context.
 from .base import ChatAgent, ChatContext, ChatResponse
 from llm_client import LLMClient
 

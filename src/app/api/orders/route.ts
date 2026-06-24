@@ -1,3 +1,4 @@
+// Orders API — GET returns all orders ordered by creation date descending.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 

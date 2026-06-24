@@ -1,3 +1,4 @@
+// Add-to-cart button — calls useCartStore.addItem() with the product and quantity 1.
 "use client";
 import { useCartStore } from "@/store/cart-store";
 

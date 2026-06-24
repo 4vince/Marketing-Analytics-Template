@@ -1,4 +1,6 @@
+// Root layout — renders Header, page content, Footer, and ChatWidget for all pages.
 import type { Metadata } from "next";
+// @ts-ignore: allow importing global CSS in app layout
 import "./globals.css";
 import Header from "@/components/storefront/Header";
 import Footer from "@/components/storefront/Footer";

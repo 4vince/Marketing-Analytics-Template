@@ -1,3 +1,4 @@
+// AI analysis trigger button — POSTs to /api/analysis for a product and refreshes page.
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";

@@ -1,3 +1,4 @@
+# Dockerfile for the Next.js app — Node 20-slim, installs deps, builds, and starts on port 3000.
 FROM node:20-slim
 WORKDIR /app
 COPY package*.json ./

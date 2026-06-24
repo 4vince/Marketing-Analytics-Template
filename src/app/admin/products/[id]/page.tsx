@@ -1,3 +1,4 @@
+// Edit product page — fetches product by ID, passes as initial data to ProductForm.
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import ProductForm from "@/components/admin/ProductForm";

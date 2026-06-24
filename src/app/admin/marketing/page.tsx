@@ -1,3 +1,4 @@
+// Marketing Intelligence dashboard — site score, per-product analysis results, quarterly reports.
 import { prisma } from "@/lib/prisma";
 import AnalyzeButton from "@/components/admin/AnalyzeButton";
 

@@ -1,3 +1,4 @@
+// Tailwind CSS configuration — scans src/**/*.{ts,tsx} and defines custom primary color palette.
 import type { Config } from "tailwindcss";
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],

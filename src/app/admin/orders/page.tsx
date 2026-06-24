@@ -1,3 +1,4 @@
+// Admin orders list — table of all orders with ID, customer, total, status, and date.
 import { prisma } from "@/lib/prisma";
 
 export default async function AdminOrdersPage() {

@@ -1,3 +1,4 @@
+# Content quality analysis agent — scores on readability, grammar, structure, and persuasiveness.
 import json
 
 from .base import BaseAgent, AnalysisResult

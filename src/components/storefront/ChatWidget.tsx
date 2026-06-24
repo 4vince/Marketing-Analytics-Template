@@ -1,3 +1,4 @@
+// Floating AI chat widget — sends messages to /api/chat proxy and displays conversations.
 "use client";
 import { useState, useRef, useEffect } from "react";
 

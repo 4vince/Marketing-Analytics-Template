@@ -1,3 +1,4 @@
+# Tests for health endpoint — verifies GET /health returns {"status": "ok"}.
 from fastapi.testclient import TestClient
 from main import app
 

@@ -1,3 +1,4 @@
+// Zustand shopping cart store with localStorage persistence — manages items, quantities, and totals.
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

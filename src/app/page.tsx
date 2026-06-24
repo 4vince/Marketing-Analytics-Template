@@ -1,3 +1,4 @@
+// Homepage — hero banner with CTA and featured products grid (up to 8 active products).
 import Link from "next/link";
 import ProductGrid from "@/components/storefront/ProductGrid";
 import { prisma } from "@/lib/prisma";

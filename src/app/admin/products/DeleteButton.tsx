@@ -1,3 +1,4 @@
+// Delete product button — shows confirmation, DELETEs via /api/products, then refreshes page.
 "use client";
 import { useRouter } from "next/navigation";
 

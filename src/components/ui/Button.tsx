@@ -1,3 +1,4 @@
+// Reusable button component with primary and secondary variants.
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary";
 }

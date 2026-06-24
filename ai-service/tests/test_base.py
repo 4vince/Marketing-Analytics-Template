@@ -1,3 +1,4 @@
+# Tests for base models and interfaces — validates data models and abstract agent classes.
 from agents.base import BaseAgent, ChatAgent, AnalysisResult, ChatContext, ChatResponse, BaseModel
 from typing import Any
 

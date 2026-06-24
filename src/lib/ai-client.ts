@@ -1,3 +1,4 @@
+// AI service HTTP client — sends product data to the Python AI service for analysis.
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:8000";
 
 export async function runProductAnalysis(productData: Record<string, unknown>) {

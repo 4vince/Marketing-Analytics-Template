@@ -1,4 +1,4 @@
-{
+{// TypeScript configuration — strict mode, ESNext module resolution, @/* path alias.
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,

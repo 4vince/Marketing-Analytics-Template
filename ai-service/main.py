@@ -1,3 +1,4 @@
+# FastAPI application entry point — defines routes for health check, chat, product analysis, and report generation.
 import os
 from dotenv import load_dotenv
 load_dotenv()

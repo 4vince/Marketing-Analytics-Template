@@ -1,3 +1,4 @@
+// Products page error boundary — shows error message with "Try Again" button.
 "use client";
 export default function ProductsError({ error, reset }: { error: Error; reset: () => void }) {
   return (

@@ -1,3 +1,4 @@
+// Stripe checkout API — POST creates a Stripe Checkout Session from cart items and returns the URL.
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 

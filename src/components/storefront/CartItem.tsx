@@ -1,3 +1,4 @@
+// "Cart item row with image, name, price, quantity controls (increment/decrement/remove).
 "use client";
 import { CartItem as CartItemType, useCartStore } from "@/store/cart-store";
 

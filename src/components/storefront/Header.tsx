@@ -1,3 +1,4 @@
+// Site header with store name, navigation links (Products, About, Contact, Cart).
 import Link from "next/link";
 
 export default function Header() {

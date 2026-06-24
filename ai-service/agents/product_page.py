@@ -1,3 +1,4 @@
+# Product page conversion analysis agent — scores on description, pricing, CTA, social proof, and images.
 import json
 
 from .base import BaseAgent, AnalysisResult

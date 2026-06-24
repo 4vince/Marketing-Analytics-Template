@@ -1,3 +1,4 @@
+// Products page loading skeleton — animated pulse placeholders for heading and product grid.
 export default function ProductsLoading() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

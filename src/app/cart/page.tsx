@@ -1,3 +1,4 @@
+// Shopping cart page — displays cart items, total, clear/checkout buttons, and empty state.
 "use client";
 import { useCartStore } from "@/store/cart-store";
 import CartItem from "@/components/storefront/CartItem";

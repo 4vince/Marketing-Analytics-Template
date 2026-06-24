@@ -1,3 +1,4 @@
+// New product page — renders ProductForm in create mode (no initial data).
 import ProductForm from "@/components/admin/ProductForm";
 
 export default function NewProductPage() {

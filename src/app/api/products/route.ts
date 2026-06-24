@@ -1,3 +1,4 @@
+// Products CRUD API — GET (list), POST (create), PUT (update), DELETE (delete). Admin-only for mutations.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";

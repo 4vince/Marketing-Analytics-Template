@@ -1,3 +1,4 @@
+// Product analysis API — POST triggers AI analysis for a product; GET returns results (optionally filtered).
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";

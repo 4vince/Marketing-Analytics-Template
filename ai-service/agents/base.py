@@ -1,3 +1,4 @@
+# Abstract base classes and Pydantic models for analysis results, chat context, and agents.
 from pydantic import BaseModel
 from abc import ABC, abstractmethod
 from typing import Any

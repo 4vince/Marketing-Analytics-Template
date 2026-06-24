@@ -1,3 +1,4 @@
+// Chat proxy API — POST forwards conversation and message to the AI service and returns the response.
 import { NextResponse } from "next/server";
 
 const AI_SERVICE = process.env.AI_SERVICE_URL || "http://localhost:8000";

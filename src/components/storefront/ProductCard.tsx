@@ -1,3 +1,4 @@
+// Product card with image, category, name, price, hover effects, and link to detail page.
 import Link from "next/link";
 
 interface ProductCardProps {

@@ -1,3 +1,4 @@
+// Stripe webhook handler — processes checkout.session.completed events and creates Order records.
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";

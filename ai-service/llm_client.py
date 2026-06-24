@@ -1,3 +1,4 @@
+# LLM client abstraction — supports OpenAI (gpt-4o) and Anthropic (claude) providers via environment config.
 import os
 from openai import OpenAI
 from anthropic import Anthropic

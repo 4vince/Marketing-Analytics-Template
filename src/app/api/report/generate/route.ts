@@ -1,3 +1,4 @@
+// Quarterly report generation API — POST sends last 90 days of analysis results to AI and creates a report.
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";

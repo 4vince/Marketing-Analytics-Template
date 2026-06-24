@@ -1,3 +1,4 @@
+# SEO analysis agent — scores product SEO on title tag, meta description, URL slug, and heading structure.
 import json
 
 from .base import BaseAgent, AnalysisResult

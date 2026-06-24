@@ -1,3 +1,4 @@
+// Admin dashboard — shows stats (product count, order count, revenue) and recent orders table.
 import { prisma } from "@/lib/prisma";
 import StatsCard from "@/components/admin/StatsCard";
 

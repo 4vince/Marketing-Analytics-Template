@@ -1,3 +1,4 @@
+# Quarterly report generation agent — analyzes results from the last 90 days and produces a summary report.
 import json
 
 from .base import BaseAgent, AnalysisResult

@@ -1,3 +1,4 @@
+# Dockerfile for the AI service — Python 3.12-slim with uvicorn on port 8000.
 FROM python:3.12-slim
 WORKDIR /app
 COPY ai-service/requirements.txt .

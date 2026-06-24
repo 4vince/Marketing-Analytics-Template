@@ -1,3 +1,4 @@
+// Dashboard statistic card — displays a title and value (e.g., product count, revenue).
 interface StatsCardProps {
   title: string;
   value: string | number;

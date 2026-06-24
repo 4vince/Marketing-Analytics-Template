@@ -1,3 +1,4 @@
+# Tests for StorefrontChatAgent — verifies respond() returns a non-empty message for a given catalog.
 import sys
 sys.path.insert(0, ".")
 import pytest

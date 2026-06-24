@@ -1,3 +1,4 @@
+// Admin sidebar navigation — links to Dashboard, Products, Orders, Marketing Intelligence.
 import Link from "next/link";
 
 const links = [

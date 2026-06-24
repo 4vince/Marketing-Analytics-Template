@@ -1,3 +1,4 @@
+# Tests for ContentQualityAgent — verifies analyze() returns valid score, findings, and suggestions.
 import sys
 sys.path.insert(0, ".")
 from agents.content_quality import ContentQualityAgent

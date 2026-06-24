@@ -1,3 +1,4 @@
+// Checkout page — creates Stripe Checkout Session and redirects to Stripe-hosted checkout.
 "use client";
 import { useCartStore } from "@/store/cart-store";
 import { useRouter } from "next/navigation";

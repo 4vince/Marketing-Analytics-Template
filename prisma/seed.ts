@@ -1,3 +1,4 @@
+// Seed script: creates admin user and sample products for development.
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 

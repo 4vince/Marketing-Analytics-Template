@@ -1,3 +1,4 @@
+// Admin layout — requires authentication (redirects to sign-in), renders sidebar and page content.
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";

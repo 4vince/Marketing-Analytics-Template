@@ -1,3 +1,4 @@
+// Stripe client singleton — provides configured Stripe instance and publishable key helper.
 import Stripe from "stripe";
 
 let _stripe: Stripe | null = null;
