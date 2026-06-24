@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  role         String   @default("admin")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Product {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  description    String
+  price          Int
+  compareAtPrice Int?     @map("compare_at_price")
+  images         Json     @default("[]")
+  category       String   @default("general")
+  metaTitle      String?  @map("meta_title")
+  metaDescription String? @map("meta_description")
+  status         String   @default("active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  analysisResults AnalysisResult[]
+
+  @@map("products")
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  customerEmail String   @map("customer_email")
+  customerName  String   @map("customer_name")
+  items         Json
+  total         Int
+  status        String   @default("pending")
+  paymentIntent String?  @unique @map("payment_intent")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("orders")
+}
+
+model AnalysisResult {
+  id        String   @id @default(cuid())
+  productId String?  @map("product_id")
+  agentType String   @map("agent_type")
+  score     Int
+  findings  Json     @default("[]")
+  suggestions Json   @default("[]")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@map("analysis_results")
+}
+
+model QuarterlyReport {
+  id           String   @id @default(cuid())
+  periodStart  DateTime @map("period_start")
+  periodEnd    DateTime @map("period_end")
+  overallScore Int?     @map("overall_score")
+  summary      String
+  sections     Json     @default("[]")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("quarterly_reports")
+}
+
+model PageContent {
+  id               String   @id @default(cuid())
+  pageType         String   @map("page_type")
+  content          Json
+  analysisResultId String?  @map("analysis_result_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@map("page_contents")
+}
+
+model ChatConversation {
+  id             String   @id @default(cuid())
+  sessionId      String   @unique @map("session_id")
+  customerEmail  String?  @map("customer_email")
+  status         String   @default("active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  messages ChatMessage[]
+
+  @@map("chat_conversations")
+}
+
+model ChatMessage {
+  id             String   @id @default(cuid())
+  conversationId String   @map("conversation_id")
+  role           String
+  content        String
+  metadata       Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation ChatConversation @relation(fields: [conversationId], references: [id])
+
+  @@map("chat_messages")
+}

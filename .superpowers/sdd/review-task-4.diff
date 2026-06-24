@@ -1,0 +1,2896 @@
+diff --git a/.env.example b/.env.example
+index d32cdc9..9ef5044 100644
+--- a/.env.example
++++ b/.env.example
+@@ -1,6 +1,7 @@
+ DATABASE_URL="postgresql://user:password@localhost:5432/ecommerce"
+ NEXTAUTH_SECRET="your-secret-here"
+ NEXTAUTH_URL="http://localhost:3000"
+ STRIPE_SECRET_KEY="sk_test_..."
+ STRIPE_PUBLISHABLE_KEY="pk_test_..."
++STRIPE_WEBHOOK_SECRET="whsec_..."
+ AI_SERVICE_URL="http://localhost:8000"
+diff --git a/.superpowers/sdd/progress.md b/.superpowers/sdd/progress.md
+index a45056f..fb395cb 100644
+Binary files a/.superpowers/sdd/progress.md and b/.superpowers/sdd/progress.md differ
+diff --git a/.superpowers/sdd/task-10-brief.md b/.superpowers/sdd/task-10-brief.md
+new file mode 100644
+index 0000000..42c1556
+--- /dev/null
++++ b/.superpowers/sdd/task-10-brief.md
+@@ -0,0 +1,184 @@
++### Task 10: Build Content Quality + SEO + Product Page Agents
++
++**Files:**
++- Create: `ai-service/agents/content_quality.py`
++- Create: `ai-service/agents/seo.py`
++- Create: `ai-service/agents/product_page.py`
++- Create: `ai-service/orchestrator.py`
++
++**Interfaces:**
++- Consumes: `BaseAgent` from Task 9
++- Produces: `Orchestrator` with `run_all_analyses(product_data: dict) -> dict[str, AnalysisResult]`
++
++- [ ] **Step 1: Create content quality agent**
++
++```python
++from .base import BaseAgent, AnalysisResult
++from llm_client import LLMClient
++
++
++class ContentQualityAgent(BaseAgent):
++    def __init__(self):
++        self.llm = LLMClient()
++
++    def analyze(self, content: dict) -> AnalysisResult:
++        prompt = f"""
++Analyze this e-commerce product content for quality:
++
++Name: {content.get('name', '')}
++Description: {content.get('description', '')}
++
++Score from 0-100 on:
++1. Readability and clarity
++2. Grammar and spelling
++3. Structure and formatting
++4. Persuasiveness and engagement
++
++Return JSON: {{"score": int, "findings": [{{"issue": str, "severity": "high"/"medium"/"low", "detail": str}}], "suggestions": [{{"area": str, "suggestion": str}}]}}
++"""
++        result = self.llm.chat("You are an expert e-commerce content analyst.", prompt)
++
++        import json
++        try:
++            data = json.loads(result)
++            return AnalysisResult(**data)
++        except json.JSONDecodeError:
++            return AnalysisResult(score=50, findings=[], suggestions=[])
++```
++
++- [ ] **Step 2: Create SEO agent**
++
++```python
++from .base import BaseAgent, AnalysisResult
++from llm_client import LLMClient
++
++
++class SEOAgent(BaseAgent):
++    def __init__(self):
++        self.llm = LLMClient()
++
++    def analyze(self, content: dict) -> AnalysisResult:
++        prompt = f"""
++Analyze SEO for this product page:
++
++Name: {content.get('name', '')}
++Meta Title: {content.get('meta_title', '')}
++Meta Description: {content.get('meta_description', '')}
++Category: {content.get('category', '')}
++Slug: {content.get('slug', '')}
++
++Score from 0-100 on:
++1. Title tag quality (length, keyword inclusion)
++2. Meta description quality
++3. URL slug optimization
++4. Heading structure signals
++
++Return JSON: {{"score": int, "findings": [{{"issue": str, "severity": str, "detail": str}}], "suggestions": [{{"area": str, "suggestion": str}}]}}
++"""
++        result = self.llm.chat("You are an expert e-commerce SEO analyst.", prompt)
++
++        import json
++        try:
++            data = json.loads(result)
++            return AnalysisResult(**data)
++        except json.JSONDecodeError:
++            return AnalysisResult(score=50, findings=[], suggestions=[])
++```
++
++- [ ] **Step 3: Create product page agent**
++
++```python
++from .base import BaseAgent, AnalysisResult
++from llm_client import LLMClient
++
++
++class ProductPageAgent(BaseAgent):
++    def __init__(self):
++        self.llm = LLMClient()
++
++    def analyze(self, content: dict) -> AnalysisResult:
++        prompt = f"""
++Analyze this product page for conversion optimization:
++
++Name: {content.get('name', '')}
++Description: {content.get('description', '')}
++Price: {content.get('price', '')}
++Images count: {len(content.get('images', []))}
++Category: {content.get('category', '')}
++
++Score from 0-100 on:
++1. Description completeness and clarity
++2. Pricing presentation
++3. Call-to-action effectiveness
++4. Social proof potential (reviews, ratings)
++5. Image quality signals
++
++Return JSON: {{"score": int, "findings": [{{"issue": str, "severity": str, "detail": str}}], "suggestions": [{{"area": str, "suggestion": str}}]}}
++"""
++        result = self.llm.chat("You are an expert e-commerce conversion analyst.", prompt)
++
++        import json
++        try:
++            data = json.loads(result)
++            return AnalysisResult(**data)
++        except json.JSONDecodeError:
++            return AnalysisResult(score=50, findings=[], suggestions=[])
++```
++
++- [ ] **Step 4: Create orchestrator.py**
++
++```python
++from agents.base import AnalysisResult
++from agents.content_quality import ContentQualityAgent
++from agents.seo import SEOAgent
++from agents.product_page import ProductPageAgent
++
++
++class Orchestrator:
++    def __init__(self):
++        self.agents = {
++            "content": ContentQualityAgent(),
++            "seo": SEOAgent(),
++            "product": ProductPageAgent(),
++        }
++
++    def run_all_analyses(self, product_data: dict) -> dict[str, AnalysisResult]:
++        results: dict[str, AnalysisResult] = {}
++        for name, agent in self.agents.items():
++            results[name] = agent.analyze(product_data)
++        return results
++```
++
++- [ ] **Step 5: Write and run tests**
++
++Create `ai-service/tests/test_content_quality.py`:
++```python
++import sys
++sys.path.insert(0, ".")
++from agents.content_quality import ContentQualityAgent
++
++
++def test_content_quality_returns_result():
++    agent = ContentQualityAgent()
++    result = agent.analyze({"name": "Test Product", "description": "A great product for testing."})
++    assert 0 <= result.score <= 100
++    assert isinstance(result.findings, list)
++    assert isinstance(result.suggestions, list)
++```
++
++Run:
++```bash
++cd D:\ecommerce-template\ai-service
++python -m pytest tests/ -v
++```
++Expected: All tests pass.
++
++- [ ] **Step 6: Commit**
++
++```bash
++git add . && git commit -m "feat: add content quality, seo, product page agents and orchestrator"
++```
++
++---
++
++
+diff --git a/.superpowers/sdd/task-11-brief.md b/.superpowers/sdd/task-11-brief.md
+new file mode 100644
+index 0000000..d016d88
+--- /dev/null
++++ b/.superpowers/sdd/task-11-brief.md
+@@ -0,0 +1,74 @@
++### Task 11: Build Chat Agent
++
++**Files:**
++- Create: `ai-service/agents/chat.py`
++
++**Interfaces:**
++- Consumes: `ChatAgent` from Task 9
++- Produces: Chat response with product-aware context
++
++- [ ] **Step 1: Create chat agent**
++
++```python
++from .base import ChatAgent, ChatContext, ChatResponse
++from llm_client import LLMClient
++
++
++class StorefrontChatAgent(ChatAgent):
++    def __init__(self):
++        self.llm = LLMClient()
++
++    async def respond(self, message: str, context: ChatContext) -> ChatResponse:
++        catalog_context = ""
++        if context.product_catalog:
++            catalog_lines = [
++                f"- {p.get('name', '')}: ${p.get('price', 0) / 100:.2f} ({p.get('category', '')})"
++                for p in context.product_catalog[:10]
++            ]
++            catalog_context = "Available products:\n" + "\n".join(catalog_lines)
++
++        system = f"""You are a helpful e-commerce assistant. Help customers find products, answer questions, and guide them through the store.
++Be concise and friendly. When recommending products, reference them by name.
++
++{catalog_context}"""
++
++        result = self.llm.chat(system, message)
++        return ChatResponse(message=result)
++```
++
++- [ ] **Step 2: Test chat agent**
++
++Create `ai-service/tests/test_chat.py`:
++```python
++import sys
++sys.path.insert(0, ".")
++import pytest
++from agents.chat import StorefrontChatAgent
++from agents.base import ChatContext
++
++
++@pytest.mark.asyncio
++async def test_chat_responds():
++    agent = StorefrontChatAgent()
++    ctx = ChatContext(
++        conversation_id="test-1",
++        product_catalog=[{"name": "Widget", "price": 2999, "category": "gadgets"}],
++    )
++    resp = await agent.respond("What products do you have?", ctx)
++    assert len(resp.message) > 0
++```
++
++```bash
++cd D:\ecommerce-template\ai-service && python -m pytest tests/test_chat.py -v
++```
++Expected: PASS
++
++- [ ] **Step 3: Commit**
++
++```bash
++git add . && git commit -m "feat: add storefront chat agent"
++```
++
++---
++
++
+diff --git a/.superpowers/sdd/task-12-brief.md b/.superpowers/sdd/task-12-brief.md
+new file mode 100644
+index 0000000..7b737f4
+--- /dev/null
++++ b/.superpowers/sdd/task-12-brief.md
+@@ -0,0 +1,119 @@
++### Task 12: Connect Next.js to AI Service
++
++**Files:**
++- Create: `src/lib/ai-client.ts`
++- Create: `src/app/api/analysis/route.ts`
++
++**Interfaces:**
++- Consumes: Python AI service HTTP endpoints
++- Produces: `/api/analysis` GÇö proxies analysis requests to Python service
++
++- [ ] **Step 1: Create AI client src/lib/ai-client.ts**
++
++```ts
++const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:8000";
++
++export async function runProductAnalysis(productData: Record<string, unknown>) {
++  const res = await fetch(`${AI_SERVICE_URL}/analyze/product`, {
++    method: "POST",
++    headers: { "Content-Type": "application/json" },
++    body: JSON.stringify(productData),
++  });
++  if (!res.ok) throw new Error("Analysis failed");
++  return res.json();
++}
++```
++
++- [ ] **Step 2: Create analysis API route src/app/api/analysis/route.ts**
++
++```ts
++import { NextResponse } from "next/server";
++import { getServerSession } from "next-auth";
++import { authOptions } from "@/lib/auth";
++import { prisma } from "@/lib/prisma";
++
++const AI_SERVICE = process.env.AI_SERVICE_URL || "http://localhost:8000";
++
++export async function POST(req: Request) {
++  const session = await getServerSession(authOptions);
++  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++
++  const { productId } = await req.json();
++  const product = await prisma.product.findUnique({ where: { id: productId } });
++  if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });
++
++  const aiRes = await fetch(`${AI_SERVICE}/analyze/product`, {
++    method: "POST",
++    headers: { "Content-Type": "application/json" },
++    body: JSON.stringify(product),
++  });
++
++  if (!aiRes.ok) return NextResponse.json({ error: "AI service error" }, { status: 502 });
++
++  const results = await aiRes.json();
++
++  for (const [agentType, result] of Object.entries(results)) {
++    await prisma.analysisResult.create({
++      data: {
++        productId: product.id,
++        agentType,
++        score: (result as { score: number }).score,
++        findings: (result as { findings: unknown }).findings,
++        suggestions: (result as { suggestions: unknown }).suggestions,
++      },
++    });
++  }
++
++  return NextResponse.json(results);
++}
++
++export async function GET(req: Request) {
++  const session = await getServerSession(authOptions);
++  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++
++  const { searchParams } = new URL(req.url);
++  const productId = searchParams.get("productId");
++
++  const where = productId ? { productId } : {};
++  const results = await prisma.analysisResult.findMany({
++    where,
++    orderBy: { createdAt: "desc" },
++  });
++  return NextResponse.json(results);
++}
++```
++
++- [ ] **Step 3: Add analyze endpoint to Python service**
++
++Add to `ai-service/main.py`:
++```python
++from orchestrator import Orchestrator
++from fastapi import HTTPException
++
++orchestrator = Orchestrator()
++
++
++@app.post("/analyze/product")
++async def analyze_product(data: dict):
++    try:
++        results = orchestrator.run_all_analyses(data)
++        return {name: result.model_dump() for name, result in results.items()}
++    except Exception as e:
++        raise HTTPException(status_code=500, detail=str(e))
++```
++
++- [ ] **Step 4: Verify**
++
++```bash
++cd D:\ecommerce-template && npx next build 2>&1 | findstr /V "Info"
++```
++
++- [ ] **Step 5: Commit**
++
++```bash
++git add . && git commit -m "feat: connect next.js to ai service for product analysis"
++```
++
++---
++
++
+diff --git a/.superpowers/sdd/task-13-brief.md b/.superpowers/sdd/task-13-brief.md
+new file mode 100644
+index 0000000..32c5889
+--- /dev/null
++++ b/.superpowers/sdd/task-13-brief.md
+@@ -0,0 +1,80 @@
++### Task 13: Build Chat WebSocket
++
++**Files:**
++- Create: `src/app/api/chat/route.ts` (WebSocket upgrade + REST fallback)
++- Modify: `ai-service/main.py` (add WebSocket endpoint)
++
++**Interfaces:**
++- Produces: WebSocket endpoint for real-time shopper chat
++- Produces: Python WebSocket handler that routes messages to ChatAgent
++
++- [ ] **Step 1: Add WebSocket to Python service**
++
++Add to `ai-service/main.py`:
++```python
++from fastapi import WebSocket, WebSocketDisconnect
++from agents.chat import StorefrontChatAgent
++from agents.base import ChatContext
++
++
++@app.websocket("/chat/{conversation_id}")
++async def chat_websocket(websocket: WebSocket, conversation_id: str):
++    await websocket.accept()
++    agent = StorefrontChatAgent()
++    ctx = ChatContext(conversation_id=conversation_id)
++
++    while True:
++        try:
++            data = await websocket.receive_json()
++            message = data.get("message", "")
++            if data.get("catalog"):
++                ctx.product_catalog = data["catalog"]
++
++            response = await agent.respond(message, ctx)
++            await websocket.send_json({"type": "response", "message": response.message})
++        except WebSocketDisconnect:
++            break
++```
++
++- [ ] **Step 2: Create Next.js chat API route**
++
++`src/app/api/chat/route.ts` (HTTP fallback for serverless environments):
++```ts
++import { NextResponse } from "next/server";
++
++const AI_SERVICE = process.env.AI_SERVICE_URL || "http://localhost:8000";
++
++export async function POST(req: Request) {
++  const body = await req.json();
++  const aiRes = await fetch(`${AI_SERVICE}/chat/${body.conversationId}`, {
++    method: "POST",
++    headers: { "Content-Type": "application/json" },
++    body: JSON.stringify({ message: body.message, catalog: body.catalog }),
++  });
++  const data = await aiRes.json();
++  return NextResponse.json(data);
++}
++```
++
++Add HTTP chat endpoint to `ai-service/main.py`:
++```python
++@app.post("/chat/{conversation_id}")
++async def chat_http(conversation_id: str, data: dict):
++    agent = StorefrontChatAgent()
++    ctx = ChatContext(
++        conversation_id=conversation_id,
++        product_catalog=data.get("catalog", []),
++    )
++    response = await agent.respond(data.get("message", ""), ctx)
++    return {"message": response.message}
++```
++
++- [ ] **Step 3: Commit**
++
++```bash
++git add . && git commit -m "feat: add chat websocket and http endpoints"
++```
++
++---
++
++
+diff --git a/.superpowers/sdd/task-14-brief.md b/.superpowers/sdd/task-14-brief.md
+new file mode 100644
+index 0000000..28df8c1
+--- /dev/null
++++ b/.superpowers/sdd/task-14-brief.md
+@@ -0,0 +1,129 @@
++### Task 14: Storefront Chat Widget
++
++**Files:**
++- Create: `src/components/storefront/ChatWidget.tsx`
++- Modify: `src/app/layout.tsx` (add ChatWidget)
++
++**Interfaces:**
++- Consumes: `/api/chat` endpoint
++- Produces: Floating chat button GåÆ expandable panel
++
++- [ ] **Step 1: Create ChatWidget component**
++
++```tsx
++"use client";
++import { useState, useRef, useEffect } from "react";
++
++interface Message {
++  role: "user" | "agent";
++  content: string;
++}
++
++export default function ChatWidget() {
++  const [open, setOpen] = useState(false);
++  const [messages, setMessages] = useState<Message[]>([
++    { role: "agent", content: "Hi! How can I help you today?" },
++  ]);
++  const [input, setInput] = useState("");
++  const [loading, setLoading] = useState(false);
++  const bottomRef = useRef<HTMLDivElement>(null);
++
++  useEffect(() => {
++    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
++  }, [messages]);
++
++  const sendMessage = async () => {
++    if (!input.trim()) return;
++    const userMsg = input.trim();
++    setInput("");
++    setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
++    setLoading(true);
++
++    try {
++      const res = await fetch("/api/chat", {
++        method: "POST",
++        body: JSON.stringify({
++          conversationId: "anon-" + Date.now(),
++          message: userMsg,
++          catalog: [],
++        }),
++      });
++      const data = await res.json();
++      setMessages((prev) => [...prev, { role: "agent", content: data.message }]);
++    } catch {
++      setMessages((prev) => [...prev, { role: "agent", content: "Sorry, I'm having trouble responding right now." }]);
++    }
++    setLoading(false);
++  };
++
++  return (
++    <div className="fixed bottom-4 right-4 z-50">
++      {open && (
++        <div className="bg-white border rounded-lg shadow-xl w-80 h-96 flex flex-col mb-2">
++          <div className="bg-primary-600 text-white px-4 py-3 rounded-t-lg font-semibold">
++            Store Assistant
++          </div>
++          <div className="flex-1 overflow-y-auto p-3 space-y-2">
++            {messages.map((msg, i) => (
++              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
++                <span className={`max-w-[80%] p-2 rounded-lg text-sm ${
++                  msg.role === "user" ? "bg-primary-100" : "bg-gray-100"
++                }`}>{msg.content}</span>
++              </div>
++            ))}
++            {loading && <div className="text-gray-400 text-sm">Typing...</div>}
++            <div ref={bottomRef} />
++          </div>
++          <div className="border-t p-2 flex gap-2">
++            <input
++              value={input}
++              onChange={(e) => setInput(e.target.value)}
++              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
++              placeholder="Ask anything..."
++              className="flex-1 border rounded px-2 py-1 text-sm"
++            />
++            <button onClick={sendMessage} disabled={loading}
++              className="bg-primary-600 text-white px-3 py-1 rounded text-sm">
++              Send
++            </button>
++          </div>
++        </div>
++      )}
++      <button
++        onClick={() => setOpen(!open)}
++        className="bg-primary-600 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-primary-700"
++      >
++        {open ? "+ù" : "=ƒÆ¼"}
++      </button>
++    </div>
++  );
++}
++```
++
++- [ ] **Step 2: Add ChatWidget to layout**
++
++Modify `src/app/layout.tsx` GÇö add `<ChatWidget />` before closing `</body>`:
++```tsx
++import ChatWidget from "@/components/storefront/ChatWidget";
++// ... inside body:
++<Header />
++<main className="flex-1">{children}</main>
++<Footer />
++<ChatWidget />
++```
++
++- [ ] **Step 3: Verify build**
++
++```bash
++cd D:\ecommerce-template && npx next build 2>&1 | findstr /V "Info"
++```
++
++- [ ] **Step 4: Commit**
++
++```bash
++git add . && git commit -m "feat: add storefront chat widget"
++```
++
++---
++
++
+diff --git a/.superpowers/sdd/task-15-brief.md b/.superpowers/sdd/task-15-brief.md
+new file mode 100644
+index 0000000..3e59364
+--- /dev/null
++++ b/.superpowers/sdd/task-15-brief.md
+@@ -0,0 +1,145 @@
++### Task 15: Marketing Intelligence Dashboard
++
++**Files:**
++- Create: `src/app/admin/marketing/page.tsx`
++- Create: `src/components/ui/Button.tsx`
++- Create: `src/components/ui/Modal.tsx`
++
++**Interfaces:**
++- Consumes: `/api/analysis` from Task 12
++- Produces: Admin marketing tab with site overview and per-product analysis
++
++- [ ] **Step 1: Create UI Button component src/components/ui/Button.tsx**
++
++```tsx
++interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
++  variant?: "primary" | "secondary";
++}
++
++export default function Button({ variant = "primary", className = "", children, ...props }: ButtonProps) {
++  const base = variant === "primary" ? "bg-primary-600 text-white hover:bg-primary-700" : "border hover:bg-gray-50";
++  return (
++    <button className={`px-4 py-2 rounded ${base} disabled:opacity-50 ${className}`} {...props}>
++      {children}
++    </button>
++  );
++}
++```
++
++- [ ] **Step 1b: Create AnalyzeButton client component**
++
++Create `src/components/admin/AnalyzeButton.tsx`:
++```tsx
++"use client";
++import { useState } from "react";
++import { useRouter } from "next/navigation";
++
++export default function AnalyzeButton({ productId }: { productId: string }) {
++  const [loading, setLoading] = useState(false);
++  const router = useRouter();
++
++  const handleClick = async () => {
++    setLoading(true);
++    await fetch("/api/analysis", {
++      method: "POST",
++      headers: { "Content-Type": "application/json" },
++      body: JSON.stringify({ productId }),
++    });
++    setLoading(false);
++    router.refresh();
++  };
++
++  return (
++    <button onClick={handleClick} disabled={loading}
++      className="bg-primary-600 text-white px-4 py-2 rounded text-sm hover:bg-primary-700 disabled:opacity-50">
++      {loading ? "Analyzing..." : "Analyze"}
++    </button>
++  );
++}
++```
++
++- [ ] **Step 2: Create marketing intelligence page**
++
++```tsx
++import { prisma } from "@/lib/prisma";
++import AnalyzeButton from "@/components/admin/AnalyzeButton";
++
++export default async function MarketingPage() {
++  const [products, results] = await Promise.all([
++    prisma.product.findMany({ where: { status: "active" }, orderBy: { createdAt: "desc" } }),
++    prisma.analysisResult.findMany({ orderBy: { createdAt: "desc" } }),
++  ]);
++
++  const latestResults = new Map<string, typeof results>();
++  for (const r of results) {
++    if (r.productId && !latestResults.has(r.productId)) {
++      latestResults.set(r.productId, []);
++    }
++    if (r.productId) latestResults.get(r.productId)?.push(r);
++  }
++
++  const avgScore = results.length > 0
++    ? Math.round(results.reduce((s, r) => s + r.score, 0) / results.length)
++    : null;
++
++  return (
++    <div>
++      <h1 className="text-2xl font-bold mb-8">Marketing Intelligence</h1>
++
++      {avgScore !== null && (
++        <div className="bg-white p-6 rounded-lg border mb-8">
++          <p className="text-sm text-gray-500">Overall Site Score</p>
++          <p className="text-3xl font-bold text-primary-600">{avgScore}/100</p>
++        </div>
++      )}
++
++      <div className="space-y-6">
++        {products.map((product) => {
++          const productResults = latestResults.get(product.id) || [];
++          const avg = productResults.length > 0
++            ? Math.round(productResults.reduce((s, r) => s + r.score, 0) / productResults.length)
++            : null;
++
++          return (
++            <div key={product.id} className="bg-white p-6 rounded-lg border">
++              <div className="flex justify-between items-start mb-4">
++                <div>
++                  <h3 className="font-semibold text-lg">{product.name}</h3>
++                  {avg !== null && <p className="text-sm text-gray-500">Score: {avg}/100</p>}
++                </div>
++                <AnalyzeButton productId={product.id} />
++              </div>
++              {productResults.length > 0 && (
++                <div className="grid grid-cols-3 gap-4">
++                  {productResults.slice(0, 3).map((r) => (
++                    <div key={r.id} className="bg-gray-50 p-3 rounded">
++                      <p className="text-xs text-gray-500 uppercase">{r.agentType}</p>
++                      <p className="text-lg font-bold">{r.score}/100</p>
++                      <ul className="mt-1">
++                        {(r.findings as Array<{ issue: string; severity: string }>).slice(0, 2).map((f, i) => (
++                          <li key={i} className="text-xs text-gray-600">GÇó {f.issue}</li>
++                        ))}
++                      </ul>
++                    </div>
++                  ))}
++                </div>
++              )}
++            </div>
++          );
++        })}
++      </div>
++    </div>
++  );
++}
++```
++
++- [ ] **Step 3: Build and commit**
++
++```bash
++cd D:\ecommerce-template && npx next build 2>&1 | findstr /V "Info"
++git add . && git commit -m "feat: add marketing intelligence dashboard"
++```
++
++---
++
++
+diff --git a/.superpowers/sdd/task-16-brief.md b/.superpowers/sdd/task-16-brief.md
+new file mode 100644
+index 0000000..39267a2
+--- /dev/null
++++ b/.superpowers/sdd/task-16-brief.md
+@@ -0,0 +1,155 @@
++### Task 16: Quarterly Report Agent + UI
++
++**Files:**
++- Modify: `ai-service/agents/quarterly_report.py`
++- Modify: `ai-service/main.py` (add report endpoint)
++- Modify: `src/app/admin/marketing/page.tsx` (add report section)
++
++**Interfaces:**
++- Produces: `/api/report/generate` GÇö generates quarterly report from stored analysis data
++- Consumes: Prisma `AnalysisResult` records via Next.js proxy
++
++- [ ] **Step 1: Create quarterly report agent**
++
++```python
++from .base import BaseAgent, AnalysisResult
++from llm_client import LLMClient
++
++
++class QuarterlyReportAgent(BaseAgent):
++    def __init__(self):
++        self.llm = LLMClient()
++
++    def analyze(self, content: dict) -> AnalysisResult:
++        analyses = content.get("analyses", [])
++        summary = f"""
++Analyze these {len(analyses)} product analyses from the last quarter:
++
++{chr(10).join(f"- {a.get('agentType', 'unknown')}: {a.get('score', 0)}/100" for a in analyses[:20])}
++
++Produce a report with:
++1. Overall score and trends
++2. Most common issues found
++3. Top 3 priorities for the next quarter
++4. Action plan with effort estimates
++
++Return JSON: {{"score": int, "findings": [{{"issue": str, "severity": str, "detail": str, "count": int}}], "suggestions": [{{"area": str, "suggestion": str, "effort": "low"/"medium"/"high"}}]}}
++"""
++        result = self.llm.chat("You are an expert e-commerce strategy analyst.", summary)
++
++        import json
++        try:
++            data = json.loads(result)
++            return AnalysisResult(**data)
++        except json.JSONDecodeError:
++            return AnalysisResult(score=50, findings=[], suggestions=[])
++```
++
++- [ ] **Step 2: Add report endpoint to Python service**
++
++Add to `ai-service/main.py`:
++```python
++from agents.quarterly_report import QuarterlyReportAgent
++
++
++@app.post("/analyze/report")
++async def generate_report(data: dict):
++    agent = QuarterlyReportAgent()
++    result = agent.analyze(data)
++    return result.model_dump()
++```
++
++- [ ] **Step 3: Add report section to admin marketing page**
++
++Extend `src/app/admin/marketing/page.tsx` to include a "Generate Report" button and list past reports GÇö add below the product analysis section.
++
++Add, at the top of the component, a fetch for reports:
++```tsx
++const reports = await prisma.quarterlyReport.findMany({ orderBy: { createdAt: "desc" } });
++```
++
++Add before the closing `</div>`:
++```tsx
++{/* Quarterly Reports */}
++<div className="mt-12">
++  <div className="flex justify-between items-center mb-4">
++    <h2 className="text-xl font-semibold">Quarterly Reports</h2>
++    <form action="/api/report/generate" method="POST">
++      <button type="submit" className="bg-primary-600 text-white px-4 py-2 rounded">
++        Generate Report
++      </button>
++    </form>
++  </div>
++  {reports.length === 0 ? (
++    <p className="text-gray-500">No reports yet. Click "Generate Report" to create one.</p>
++  ) : (
++    <div className="space-y-3">
++      {reports.map((report) => (
++        <div key={report.id} className="bg-white p-4 rounded-lg border">
++          <p className="font-semibold">
++            {new Date(report.periodStart).toLocaleDateString()} GÇö {new Date(report.periodEnd).toLocaleDateString()}
++          </p>
++          {report.overallScore !== null && (
++            <p className="text-sm text-gray-500">Score: {report.overallScore}/100</p>
++          )}
++          <p className="text-sm mt-1">{report.summary.slice(0, 200)}...</p>
++        </div>
++      ))}
++    </div>
++  )}
++</div>
++```
++
++- [ ] **Step 4: Add report API route**
++
++Create `src/app/api/report/generate/route.ts`:
++```ts
++import { NextResponse } from "next/server";
++import { getServerSession } from "next-auth";
++import { authOptions } from "@/lib/auth";
++import { prisma } from "@/lib/prisma";
++
++const AI_SERVICE = process.env.AI_SERVICE_URL || "http://localhost:8000";
++
++export async function POST() {
++  const session = await getServerSession(authOptions);
++  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++
++  const ninetyDaysAgo = new Date();
++  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
++
++  const analyses = await prisma.analysisResult.findMany({
++    where: { createdAt: { gte: ninetyDaysAgo } },
++  });
++
++  const aiRes = await fetch(`${AI_SERVICE}/analyze/report`, {
++    method: "POST",
++    headers: { "Content-Type": "application/json" },
++    body: JSON.stringify({ analyses }),
++  });
++  const result = await aiRes.json();
++
++  await prisma.quarterlyReport.create({
++    data: {
++      periodStart: ninetyDaysAgo,
++      periodEnd: new Date(),
++      overallScore: result.score,
++      summary: result.findings.map((f: { issue: string }) => f.issue).join(". "),
++      sections: { findings: result.findings, suggestions: result.suggestions },
++    },
++  });
++
++  return NextResponse.json({ success: true });
++}
++```
++
++- [ ] **Step 5: Build and commit**
++
++```bash
++cd D:\ecommerce-template && npx next build 2>&1 | findstr /V "Info"
++git add . && git commit -m "feat: add quarterly report generation and UI"
++```
++
++---
++
++
+diff --git a/.superpowers/sdd/task-17-brief.md b/.superpowers/sdd/task-17-brief.md
+new file mode 100644
+index 0000000..4ca096c
+--- /dev/null
++++ b/.superpowers/sdd/task-17-brief.md
+@@ -0,0 +1,39 @@
++### Task 17: Theming System
++
++**Files:**
++- Modify: `tailwind.config.ts` (extend with CSS variable-based theming)
++- Create: `src/lib/theme.ts`
++- Create: `src/app/admin/settings/page.tsx`
++
++- [ ] **Step 1: Create theme lib src/lib/theme.ts**
++
++```ts
++export interface Theme {
++  primaryColor: string;
++  logo?: string;
++  storeName: string;
++}
++
++const defaultTheme: Theme = {
++  primaryColor: "#3b82f6",
++  storeName: "Store",
++};
++
++export function getTheme(): Theme {
++  if (typeof window !== "undefined") {
++    const stored = localStorage.getItem("store-theme");
++    if (stored) return JSON.parse(stored);
++  }
++  return defaultTheme;
++}
++```
++
++- [ ] **Step 2: Commit**
++
++```bash
++git add . && git commit -m "feat: add theming system foundation"
++```
++
++---
++
++
+diff --git a/.superpowers/sdd/task-18-brief.md b/.superpowers/sdd/task-18-brief.md
+new file mode 100644
+index 0000000..c765373
+--- /dev/null
++++ b/.superpowers/sdd/task-18-brief.md
+@@ -0,0 +1,57 @@
++### Task 18: Polish + Deployment
++
++**Files:**
++- Create: `D:\ecommerce-template\Dockerfile` (for Python service)
++- Create: `D:\ecommerce-template\docker-compose.yml`
++- Modify: Various files for loading/error states
++
++- [ ] **Step 1: Create Dockerfile for Python service**
++
++```dockerfile
++FROM python:3.12-slim
++WORKDIR /app
++COPY ai-service/requirements.txt .
++RUN pip install -r requirements.txt
++COPY ai-service/ .
++CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
++```
++
++- [ ] **Step 2: Create docker-compose.yml**
++
++```yaml
++version: "3.8"
++services:
++  ai-service:
++    build: .
++    ports:
++      - "8000:8000"
++    env_file: ./ai-service/.env
++  postgres:
++    image: postgres:16
++    environment:
++      POSTGRES_USER: user
++      POSTGRES_PASSWORD: password
++      POSTGRES_DB: ecommerce
++    ports:
++      - "5432:5432"
++    volumes:
++      - pgdata:/var/lib/postgresql/data
++
++volumes:
++  pgdata:
++```
++
++- [ ] **Step 3: Final build check**
++
++```bash
++cd D:\ecommerce-template && npx next build 2>&1 | findstr /V "Info"
++```
++
++Expected: Build succeeds without errors.
++
++- [ ] **Step 4: Commit**
++
++```bash
++git add . && git commit -m "chore: add docker config and final polish"
++```
++
+diff --git a/.superpowers/sdd/task-4-brief.md b/.superpowers/sdd/task-4-brief.md
+new file mode 100644
+index 0000000..9d3830c
+--- /dev/null
++++ b/.superpowers/sdd/task-4-brief.md
+@@ -0,0 +1,237 @@
++### Task 4: Cart + Checkout with Stripe
++
++**Files:**
++- Create: `src/store/cart-store.ts`
++- Create: `src/app/cart/page.tsx`
++- Create: `src/components/storefront/CartItem.tsx`
++- Create: `src/app/checkout/page.tsx`
++- Create: `src/lib/stripe.ts`
++- Create: `src/app/api/checkout/route.ts`
++
++**Interfaces:**
++- Produces: `useCartStore` GÇö zustand store with `items`, `addItem`, `removeItem`, `updateQuantity`, `total`, `clearCart`
++- Consumes: Stripe payment flow
++
++- [ ] **Step 1: Create cart store src/store/cart-store.ts**
++
++```ts
++import { create } from "zustand";
++import { persist } from "zustand/middleware";
++
++export interface CartItem {
++  id: string; name: string; slug: string; price: number; images: string[]; quantity: number;
++}
++
++interface CartState {
++  items: CartItem[];
++  addItem: (item: CartItem) => void;
++  removeItem: (id: string) => void;
++  updateQuantity: (id: string, qty: number) => void;
++  clearCart: () => void;
++  total: () => number;
++}
++
++export const useCartStore = create<CartState>()(
++  persist(
++    (set, get) => ({
++      items: [],
++      addItem: (item) => {
++        const existing = get().items.find((i) => i.id === item.id);
++        if (existing) {
++          set({ items: get().items.map((i) => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i) });
++        } else {
++          set({ items: [...get().items, item] });
++        }
++      },
++      removeItem: (id) => set({ items: get().items.filter((i) => i.id !== id) }),
++      updateQuantity: (id, qty) => set({ items: get().items.map((i) => i.id === id ? { ...i, quantity: qty } : i) }),
++      clearCart: () => set({ items: [] }),
++      total: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
++    }),
++    { name: "cart-storage" }
++  )
++);
++```
++
++- [ ] **Step 2: Create CartItem component src/components/storefront/CartItem.tsx**
++
++```tsx
++"use client";
++import { CartItem as CartItemType, useCartStore } from "@/store/cart-store";
++
++export default function CartItem({ item }: { item: CartItemType }) {
++  const { updateQuantity, removeItem } = useCartStore();
++
++  return (
++    <div className="flex gap-4 py-4 border-b">
++      <div className="w-20 h-20 bg-gray-100 rounded">
++        {item.images[0] && <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover rounded" />}
++      </div>
++      <div className="flex-1">
++        <h3 className="font-semibold">{item.name}</h3>
++        <p className="text-primary-600">${(item.price / 100).toFixed(2)}</p>
++        <div className="flex items-center gap-2 mt-2">
++          <button onClick={() => updateQuantity(item.id, Math.max(0, item.quantity - 1))}
++            className="w-8 h-8 border rounded">-</button>
++          <span>{item.quantity}</span>
++          <button onClick={() => updateQuantity(item.id, item.quantity + 1)}
++            className="w-8 h-8 border rounded">+</button>
++          <button onClick={() => removeItem(item.id)}
++            className="ml-4 text-sm text-red-500">Remove</button>
++        </div>
++      </div>
++    </div>
++  );
++}
++```
++
++- [ ] **Step 3: Create cart page src/app/cart/page.tsx**
++
++```tsx
++"use client";
++import { useCartStore } from "@/store/cart-store";
++import CartItem from "@/components/storefront/CartItem";
++import Link from "next/link";
++
++export default function CartPage() {
++  const { items, total, clearCart } = useCartStore();
++
++  if (items.length === 0) {
++    return (
++      <div className="max-w-3xl mx-auto px-4 py-16 text-center">
++        <h1 className="text-2xl font-bold mb-4">Your Cart is Empty</h1>
++        <Link href="/products" className="text-primary-600 hover:underline">Continue Shopping</Link>
++      </div>
++    );
++  }
++
++  return (
++    <div className="max-w-3xl mx-auto px-4 py-8">
++      <h1 className="text-2xl font-bold mb-8">Shopping Cart</h1>
++      {items.map((item) => <CartItem key={item.id} item={item} />)}
++      <div className="mt-8 text-right">
++        <p className="text-xl font-bold">Total: ${(total() / 100).toFixed(2)}</p>
++        <div className="flex gap-4 justify-end mt-4">
++          <button onClick={clearCart} className="px-4 py-2 border rounded">Clear</button>
++          <Link href="/checkout" className="px-6 py-2 bg-primary-600 text-white rounded hover:bg-primary-700">
++            Checkout
++          </Link>
++        </div>
++      </div>
++    </div>
++  );
++}
++```
++
++- [ ] **Step 4: Create stripe lib src/lib/stripe.ts**
++
++```ts
++import Stripe from "stripe";
++
++export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
++  apiVersion: "2024-11-20.acacia",
++  typescript: true,
++});
++
++export function getStripePublishableKey() {
++  return process.env.STRIPE_PUBLISHABLE_KEY!;
++}
++```
++
++- [ ] **Step 5: Create checkout API src/app/api/checkout/route.ts**
++
++```ts
++import { NextResponse } from "next/server";
++import { stripe } from "@/lib/stripe";
++
++export async function POST(req: Request) {
++  try {
++    const { items } = await req.json();
++    const session = await stripe.checkout.sessions.create({
++      mode: "payment",
++      line_items: items.map((item: { name: string; price: number; quantity: number }) => ({
++        price_data: {
++          currency: "usd",
++          product_data: { name: item.name },
++          unit_amount: item.price,
++        },
++        quantity: item.quantity,
++      })),
++      success_url: `${req.headers.get("origin")}/cart?success=true`,
++      cancel_url: `${req.headers.get("origin")}/cart?canceled=true`,
++    });
++    return NextResponse.json({ url: session.url });
++  } catch {
++    return NextResponse.json({ error: "Checkout failed" }, { status: 500 });
++  }
++}
++```
++
++- [ ] **Step 6: Create checkout page src/app/checkout/page.tsx**
++
++```tsx
++"use client";
++import { useCartStore } from "@/store/cart-store";
++import { useRouter } from "next/navigation";
++import { useState } from "react";
++
++export default function CheckoutPage() {
++  const { items, total } = useCartStore();
++  const router = useRouter();
++  const [loading, setLoading] = useState(false);
++
++  const handleCheckout = async () => {
++    setLoading(true);
++    const res = await fetch("/api/checkout", {
++      method: "POST",
++      body: JSON.stringify({
++        items: items.map((i) => ({ name: i.name, price: i.price, quantity: i.quantity })),
++      }),
++    });
++    const data = await res.json();
++    if (data.url) window.location.href = data.url;
++    setLoading(false);
++  };
++
++  if (items.length === 0) {
++    router.push("/cart");
++    return null;
++  }
++
++  return (
++    <div className="max-w-lg mx-auto px-4 py-8">
++      <h1 className="text-2xl font-bold mb-8">Checkout</h1>
++      {items.map((item) => (
++        <div key={item.id} className="flex justify-between py-2 border-b">
++          <span>{item.name} x{item.quantity}</span>
++          <span>${((item.price * item.quantity) / 100).toFixed(2)}</span>
++        </div>
++      ))}
++      <p className="text-xl font-bold mt-4">Total: ${(total() / 100).toFixed(2)}</p>
++      <button
++        onClick={handleCheckout}
++        disabled={loading}
++        className="w-full mt-6 bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 disabled:opacity-50"
++      >
++        {loading ? "Processing..." : "Pay with Stripe"}
++      </button>
++    </div>
++  );
++}
++```
++
++- [ ] **Step 7: Verify build**
++
++```bash
++cd D:\ecommerce-template && npx next build 2>&1 | findstr /V "Info"
++```
++
++- [ ] **Step 8: Commit**
++
++```bash
++git add . && git commit -m "feat: add cart store, cart page, and stripe checkout"
++```
++
++---
++
++
+diff --git a/.superpowers/sdd/task-5-brief.md b/.superpowers/sdd/task-5-brief.md
+new file mode 100644
+index 0000000..2545285
+--- /dev/null
++++ b/.superpowers/sdd/task-5-brief.md
+@@ -0,0 +1,185 @@
++### Task 5: Admin Auth + Dashboard Layout
++
++**Files:**
++- Create: `src/lib/auth.ts`
++- Create: `src/app/api/auth/[...nextauth]/route.ts`
++- Create: `src/app/admin/layout.tsx`
++- Create: `src/app/admin/page.tsx`
++- Create: `src/components/admin/Sidebar.tsx`
++- Create: `src/components/admin/StatsCard.tsx`
++
++**Interfaces:**
++- Produces: NextAuth configuration with credentials provider
++- Produces: Admin layout with sidebar navigation
++
++- [ ] **Step 1: Create auth config src/lib/auth.ts**
++
++```ts
++import { NextAuthOptions } from "next-auth";
++import CredentialsProvider from "next-auth/providers/credentials";
++import { prisma } from "./prisma";
++import bcrypt from "bcryptjs";
++
++export const authOptions: NextAuthOptions = {
++  providers: [
++    CredentialsProvider({
++      name: "credentials",
++      credentials: {
++        email: { label: "Email", type: "email" },
++        password: { label: "Password", type: "password" },
++      },
++      async authorize(credentials) {
++        if (!credentials?.email || !credentials?.password) return null;
++        const user = await prisma.user.findUnique({ where: { email: credentials.email } });
++        if (!user) return null;
++        const valid = await bcrypt.compare(credentials.password, user.passwordHash);
++        if (!valid) return null;
++        return { id: user.id, email: user.email, name: user.name };
++      },
++    }),
++  ],
++  session: { strategy: "jwt" },
++  pages: { signIn: "/admin" },
++};
++```
++
++- [ ] **Step 2: Create auth route handler src/app/api/auth/[...nextauth]/route.ts**
++
++```ts
++import NextAuth from "next-auth";
++import { authOptions } from "@/lib/auth";
++
++const handler = NextAuth(authOptions);
++export { handler as GET, handler as POST };
++```
++
++- [ ] **Step 3: Create admin layout src/app/admin/layout.tsx**
++
++```tsx
++import { getServerSession } from "next-auth";
++import { redirect } from "next/navigation";
++import { authOptions } from "@/lib/auth";
++import Sidebar from "@/components/admin/Sidebar";
++
++export default async function AdminLayout({ children }: { children: React.ReactNode }) {
++  const session = await getServerSession(authOptions);
++  if (!session) {
++    redirect("/api/auth/signin");
++  }
++  return (
++    <div className="flex min-h-screen">
++      <Sidebar />
++      <main className="flex-1 p-8 bg-gray-50">{children}</main>
++    </div>
++  );
++}
++```
++
++- [ ] **Step 4: Create admin sidebar src/components/admin/Sidebar.tsx**
++
++```tsx
++import Link from "next/link";
++
++const links = [
++  { href: "/admin", label: "Dashboard" },
++  { href: "/admin/products", label: "Products" },
++  { href: "/admin/orders", label: "Orders" },
++  { href: "/admin/marketing", label: "Marketing Intelligence" },
++];
++
++export default function Sidebar() {
++  return (
++    <aside className="w-64 bg-white border-r p-6">
++      <Link href="/admin" className="text-xl font-bold mb-8 block">Admin</Link>
++      <nav className="flex flex-col gap-4">
++        {links.map((link) => (
++          <Link key={link.href} href={link.href} className="hover:text-primary-600">
++            {link.label}
++          </Link>
++        ))}
++      </nav>
++    </aside>
++  );
++}
++```
++
++- [ ] **Step 5: Create admin dashboard src/app/admin/page.tsx**
++
++```tsx
++import { prisma } from "@/lib/prisma";
++import StatsCard from "@/components/admin/StatsCard";
++
++export default async function AdminDashboard() {
++  const [productCount, orderCount, recentOrders] = await Promise.all([
++    prisma.product.count(),
++    prisma.order.count(),
++    prisma.order.findMany({ take: 5, orderBy: { createdAt: "desc" } }),
++  ]);
++
++  return (
++    <div>
++      <h1 className="text-2xl font-bold mb-8">Dashboard</h1>
++      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
++        <StatsCard title="Products" value={productCount} />
++        <StatsCard title="Orders" value={orderCount} />
++        <StatsCard title="Revenue" value={`$${recentOrders.reduce((s, o) => s + o.total, 0) / 100}`} />
++      </div>
++      <h2 className="text-xl font-semibold mb-4">Recent Orders</h2>
++      <table className="w-full bg-white rounded-lg">
++        <thead className="border-b">
++          <tr>
++            <th className="text-left p-3">Order</th>
++            <th className="text-left p-3">Customer</th>
++            <th className="text-left p-3">Total</th>
++            <th className="text-left p-3">Status</th>
++          </tr>
++        </thead>
++        <tbody>
++          {recentOrders.map((order) => (
++            <tr key={order.id} className="border-b">
++              <td className="p-3">{order.id.slice(0, 8)}</td>
++              <td className="p-3">{order.customerName}</td>
++              <td className="p-3">${(order.total / 100).toFixed(2)}</td>
++              <td className="p-3">{order.status}</td>
++            </tr>
++          ))}
++        </tbody>
++      </table>
++    </div>
++  );
++}
++```
++
++- [ ] **Step 6: Create StatsCard src/components/admin/StatsCard.tsx**
++
++```tsx
++interface StatsCardProps {
++  title: string;
++  value: string | number;
++}
++
++export default function StatsCard({ title, value }: StatsCardProps) {
++  return (
++    <div className="bg-white p-6 rounded-lg border">
++      <p className="text-sm text-gray-500">{title}</p>
++      <p className="text-2xl font-bold mt-1">{value}</p>
++    </div>
++  );
++}
++```
++
++- [ ] **Step 7: Verify build**
++
++```bash
++cd D:\ecommerce-template && npx next build 2>&1 | findstr /V "Info"
++```
++
++- [ ] **Step 8: Commit**
++
++```bash
++git add . && git commit -m "feat: add admin auth, layout, sidebar, and dashboard"
++```
++
++---
++
++
+diff --git a/.superpowers/sdd/task-6-brief.md b/.superpowers/sdd/task-6-brief.md
+new file mode 100644
+index 0000000..d20ab16
+--- /dev/null
++++ b/.superpowers/sdd/task-6-brief.md
+@@ -0,0 +1,210 @@
++### Task 6: Admin Products CRUD
++
++**Files:**
++- Create: `src/app/admin/products/page.tsx`
++- Create: `src/components/admin/ProductForm.tsx`
++- Create: `src/app/api/products/route.ts`
++
++**Interfaces:**
++- Consumes: Prisma `Product` model
++- Produces: Product CRUD UI in admin
++
++- [ ] **Step 1: Create products API src/app/api/products/route.ts**
++
++```ts
++import { NextResponse } from "next/server";
++import { prisma } from "@/lib/prisma";
++import { getServerSession } from "next-auth";
++import { authOptions } from "@/lib/auth";
++
++export async function GET() {
++  const products = await prisma.product.findMany({ orderBy: { createdAt: "desc" } });
++  return NextResponse.json(products);
++}
++
++export async function POST(req: Request) {
++  const session = await getServerSession(authOptions);
++  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++
++  const data = await req.json();
++  const product = await prisma.product.create({
++    data: {
++      name: data.name,
++      slug: data.slug || data.name.toLowerCase().replace(/\s+/g, "-"),
++      description: data.description,
++      price: Math.round(data.price * 100),
++      compareAtPrice: data.compareAtPrice ? Math.round(data.compareAtPrice * 100) : null,
++      images: data.images || [],
++      category: data.category || "general",
++      metaTitle: data.metaTitle || null,
++      metaDescription: data.metaDescription || null,
++      status: data.status || "draft",
++    },
++  });
++  return NextResponse.json(product);
++}
++```
++
++- [ ] **Step 2: Create admin products page src/app/admin/products/page.tsx**
++
++```tsx
++import { prisma } from "@/lib/prisma";
++import Link from "next/link";
++
++export default async function AdminProductsPage() {
++  const products = await prisma.product.findMany({ orderBy: { createdAt: "desc" } });
++
++  return (
++    <div>
++      <div className="flex justify-between items-center mb-8">
++        <h1 className="text-2xl font-bold">Products</h1>
++        <Link href="/admin/products/new" className="bg-primary-600 text-white px-4 py-2 rounded">
++          Add Product
++        </Link>
++      </div>
++      <table className="w-full bg-white rounded-lg">
++        <thead className="border-b">
++          <tr>
++            <th className="text-left p-3">Name</th>
++            <th className="text-left p-3">Price</th>
++            <th className="text-left p-3">Status</th>
++            <th className="text-left p-3">Actions</th>
++          </tr>
++        </thead>
++        <tbody>
++          {products.map((p) => (
++            <tr key={p.id} className="border-b">
++              <td className="p-3">{p.name}</td>
++              <td className="p-3">${(p.price / 100).toFixed(2)}</td>
++              <td className="p-3">{p.status}</td>
++              <td className="p-3">
++                <Link href={`/admin/products/${p.id}`} className="text-primary-600">Edit</Link>
++              </td>
++            </tr>
++          ))}
++        </tbody>
++      </table>
++    </div>
++  );
++}
++```
++
++- [ ] **Step 3: Create ProductForm component src/components/admin/ProductForm.tsx**
++
++```tsx
++"use client";
++import { useState } from "react";
++import { useRouter } from "next/navigation";
++
++interface ProductFormProps {
++  initial?: {
++    name: string; description: string; price: number; category: string;
++    status: string; images: string[];
++  };
++}
++
++export default function ProductForm({ initial }: ProductFormProps) {
++  const router = useRouter();
++  const [loading, setLoading] = useState(false);
++  const [form, setForm] = useState({
++    name: initial?.name || "",
++    description: initial?.description || "",
++    price: initial?.price ? (initial.price / 100).toString() : "",
++    category: initial?.category || "general",
++    status: initial?.status || "draft",
++    images: initial?.images?.join(", ") || "",
++  });
++
++  const handleSubmit = async (e: React.FormEvent) => {
++    e.preventDefault();
++    setLoading(true);
++    await fetch("/api/products", {
++      method: "POST",
++      body: JSON.stringify({
++        ...form,
++        price: parseFloat(form.price),
++        images: form.images.split(",").map((s) => s.trim()).filter(Boolean),
++      }),
++    });
++    setLoading(false);
++    router.push("/admin/products");
++    router.refresh();
++  };
++
++  return (
++    <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
++      <div>
++        <label className="block mb-1">Name</label>
++        <input name="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
++          className="w-full border rounded px-3 py-2" required />
++      </div>
++      <div>
++        <label className="block mb-1">Description</label>
++        <textarea name="description" value={form.description}
++          onChange={(e) => setForm({ ...form, description: e.target.value })}
++          className="w-full border rounded px-3 py-2" rows={4} required />
++      </div>
++      <div>
++        <label className="block mb-1">Price ($)</label>
++        <input name="price" type="number" step="0.01" value={form.price}
++          onChange={(e) => setForm({ ...form, price: e.target.value })} className="w-full border rounded px-3 py-2" required />
++      </div>
++      <div>
++        <label className="block mb-1">Category</label>
++        <input name="category" value={form.category}
++          onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full border rounded px-3 py-2" />
++      </div>
++      <div>
++        <label className="block mb-1">Image URLs (comma-separated)</label>
++        <input name="images" value={form.images}
++          onChange={(e) => setForm({ ...form, images: e.target.value })} className="w-full border rounded px-3 py-2" />
++      </div>
++      <div>
++        <label className="block mb-1">Status</label>
++        <select name="status" value={form.status}
++          onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full border rounded px-3 py-2">
++          <option value="draft">Draft</option>
++          <option value="active">Active</option>
++          <option value="archived">Archived</option>
++        </select>
++      </div>
++      <button type="submit" disabled={loading}
++        className="bg-primary-600 text-white px-6 py-2 rounded disabled:opacity-50">
++        {loading ? "Saving..." : "Save Product"}
++      </button>
++    </form>
++  );
++}
++```
++
++- [ ] **Step 4: Create new product page**
++
++Create `src/app/admin/products/new/page.tsx`:
++```tsx
++import ProductForm from "@/components/admin/ProductForm";
++
++export default function NewProductPage() {
++  return (
++    <div>
++      <h1 className="text-2xl font-bold mb-8">New Product</h1>
++      <ProductForm />
++    </div>
++  );
++}
++```
++
++- [ ] **Step 5: Verify build**
++
++```bash
++cd D:\ecommerce-template && npx next build 2>&1 | findstr /V "Info"
++```
++
++- [ ] **Step 6: Commit**
++
++```bash
++git add . && git commit -m "feat: add admin products CRUD"
++```
++
++---
++
++
+diff --git a/.superpowers/sdd/task-7-brief.md b/.superpowers/sdd/task-7-brief.md
+new file mode 100644
+index 0000000..3c8d9dd
+--- /dev/null
++++ b/.superpowers/sdd/task-7-brief.md
+@@ -0,0 +1,119 @@
++### Task 7: Admin Orders Management
++
++**Files:**
++- Create: `src/app/admin/orders/page.tsx`
++- Create: `src/app/api/orders/route.ts`
++- Create: `src/app/api/webhooks/stripe/route.ts`
++
++**Interfaces:**
++- Consumes: Stripe webhook for order creation
++- Produces: Order management UI in admin
++
++- [ ] **Step 1: Create orders API src/app/api/orders/route.ts**
++
++```ts
++import { NextResponse } from "next/server";
++import { prisma } from "@/lib/prisma";
++
++export async function GET() {
++  const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" } });
++  return NextResponse.json(orders);
++}
++```
++
++- [ ] **Step 2: Create Stripe webhook handler**
++
++Create `src/app/api/webhooks/stripe/route.ts`:
++```ts
++import { NextResponse } from "next/server";
++import { stripe } from "@/lib/stripe";
++import { prisma } from "@/lib/prisma";
++
++export async function POST(req: Request) {
++  const body = await req.text();
++  const sig = req.headers.get("stripe-signature")!;
++  let event;
++
++  try {
++    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
++  } catch {
++    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
++  }
++
++  if (event.type === "checkout.session.completed") {
++    const session = event.data.object;
++    await prisma.order.create({
++      data: {
++        customerEmail: session.customer_details?.email || "unknown",
++        customerName: session.customer_details?.name || "Unknown",
++        items: [],
++        total: session.amount_total || 0,
++        status: "paid",
++        paymentIntent: session.payment_intent as string,
++      },
++    });
++  }
++
++  return NextResponse.json({ received: true });
++}
++```
++
++- [ ] **Step 3: Create admin orders page src/app/admin/orders/page.tsx**
++
++```tsx
++import { prisma } from "@/lib/prisma";
++
++export default async function AdminOrdersPage() {
++  const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" } });
++
++  return (
++    <div>
++      <h1 className="text-2xl font-bold mb-8">Orders</h1>
++      <table className="w-full bg-white rounded-lg">
++        <thead className="border-b">
++          <tr>
++            <th className="text-left p-3">Order ID</th>
++            <th className="text-left p-3">Customer</th>
++            <th className="text-left p-3">Email</th>
++            <th className="text-left p-3">Total</th>
++            <th className="text-left p-3">Status</th>
++            <th className="text-left p-3">Date</th>
++          </tr>
++        </thead>
++        <tbody>
++          {orders.map((order) => (
++            <tr key={order.id} className="border-b">
++              <td className="p-3 font-mono">{order.id.slice(0, 8)}</td>
++              <td className="p-3">{order.customerName}</td>
++              <td className="p-3">{order.customerEmail}</td>
++              <td className="p-3">${(order.total / 100).toFixed(2)}</td>
++              <td className="p-3">
++                <span className={`px-2 py-1 rounded text-sm ${
++                  order.status === "paid" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
++                }`}>{order.status}</span>
++              </td>
++              <td className="p-3">{new Date(order.createdAt).toLocaleDateString()}</td>
++            </tr>
++          ))}
++        </tbody>
++      </table>
++    </div>
++  );
++}
++```
++
++- [ ] **Step 4: Verify build**
++
++```bash
++cd D:\ecommerce-template && npx next build 2>&1 | findstr /V "Info"
++```
++
++- [ ] **Step 5: Commit**
++
++```bash
++git add . && git commit -m "feat: add orders management and stripe webhook"
++```
++
++---
++
++
+diff --git a/.superpowers/sdd/task-8-brief.md b/.superpowers/sdd/task-8-brief.md
+new file mode 100644
+index 0000000..f408077
+--- /dev/null
++++ b/.superpowers/sdd/task-8-brief.md
+@@ -0,0 +1,58 @@
++### Task 8: About + Contact Static Pages
++
++**Files:**
++- Create: `src/app/about/page.tsx`
++- Create: `src/app/contact/page.tsx`
++
++- [ ] **Step 1: Create about page**
++
++```tsx
++export default function AboutPage() {
++  return (
++    <div className="max-w-3xl mx-auto px-4 py-16">
++      <h1 className="text-3xl font-bold mb-6">About Us</h1>
++      <div className="prose max-w-none">
++        <p>Welcome to our store. We are dedicated to providing the best products and customer experience.</p>
++        <p>This template is designed to be customized with your own brand, products, and story.</p>
++      </div>
++    </div>
++  );
++}
++```
++
++- [ ] **Step 2: Create contact page**
++
++```tsx
++export default function ContactPage() {
++  return (
++    <div className="max-w-3xl mx-auto px-4 py-16">
++      <h1 className="text-3xl font-bold mb-6">Contact Us</h1>
++      <form className="space-y-4">
++        <div>
++          <label className="block mb-1">Name</label>
++          <input className="w-full border rounded px-3 py-2" required />
++        </div>
++        <div>
++          <label className="block mb-1">Email</label>
++          <input type="email" className="w-full border rounded px-3 py-2" required />
++        </div>
++        <div>
++          <label className="block mb-1">Message</label>
++          <textarea className="w-full border rounded px-3 py-2" rows={5} required />
++        </div>
++        <button type="submit" className="bg-primary-600 text-white px-6 py-2 rounded">Send</button>
++      </form>
++    </div>
++  );
++}
++```
++
++- [ ] **Step 3: Commit**
++
++```bash
++git add . && git commit -m "feat: add about and contact pages"
++```
++
++---
++
++
+diff --git a/.superpowers/sdd/task-9-brief.md b/.superpowers/sdd/task-9-brief.md
+new file mode 100644
+index 0000000..fab2bf3
+--- /dev/null
++++ b/.superpowers/sdd/task-9-brief.md
+@@ -0,0 +1,175 @@
++### Task 9: Scaffold Python AI Service
++
++**Files:**
++- Create: `ai-service/requirements.txt`
++- Create: `ai-service/.env.example`
++- Create: `ai-service/main.py`
++- Create: `ai-service/llm_client.py`
++- Create: `ai-service/agents/__init__.py`
++- Create: `ai-service/agents/base.py`
++
++**Interfaces:**
++- Produces: FastAPI app with health endpoint
++- Produces: `LLMClient` GÇö wrapper around OpenAI/Claude API
++- Produces: `BaseAgent` GÇö abstract class with `analyze(content: dict) -> AnalysisResult`
++- Produces: `ChatAgent` GÇö abstract class with `async respond(message: str, context: ChatContext) -> ChatResponse`
++
++- [ ] **Step 1: Create requirements.txt**
++
++```
++fastapi==0.111.0
++uvicorn==0.30.0
++openai==1.30.0
++anthropic==0.34.0
++pydantic==2.7.0
++python-dotenv==1.0.1
++websockets==12.0
++httpx==0.27.0
++pytest==8.2.0
++pytest-asyncio==0.23.0
++```
++
++- [ ] **Step 2: Create .env.example**
++
++```
++OPENAI_API_KEY=sk-...
++ANTHROPIC_API_KEY=sk-ant-...
++LLM_PROVIDER=openai
++LLM_MODEL=gpt-4o
++```
++
++- [ ] **Step 3: Create agents/base.py**
++
++```python
++from pydantic import BaseModel
++from abc import ABC, abstractmethod
++from typing import Any
++
++
++class AnalysisResult(BaseModel):
++    score: int
++    findings: list[dict[str, Any]]
++    suggestions: list[dict[str, Any]]
++
++
++class ChatContext(BaseModel):
++    conversation_id: str
++    product_catalog: list[dict[str, Any]] = []
++    customer_email: str | None = None
++
++
++class ChatResponse(BaseModel):
++    message: str
++    actions: list[dict[str, Any]] = []
++
++
++class BaseAgent(ABC):
++    @abstractmethod
++    def analyze(self, content: dict) -> AnalysisResult:
++        ...
++
++
++class ChatAgent(ABC):
++    @abstractmethod
++    async def respond(self, message: str, context: ChatContext) -> ChatResponse:
++        ...
++```
++
++- [ ] **Step 4: Create llm_client.py**
++
++```python
++import os
++from openai import OpenAI
++from anthropic import Anthropic
++
++
++class LLMClient:
++    def __init__(self):
++        provider = os.getenv("LLM_PROVIDER", "openai")
++        model = os.getenv("LLM_MODEL", "gpt-4o")
++
++        if provider == "openai":
++            self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
++            self.model = model
++            self.provider = "openai"
++        elif provider == "anthropic":
++            self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
++            self.model = model
++            self.provider = "anthropic"
++
++    def chat(self, system: str, user: str) -> str:
++        if self.provider == "openai":
++            resp = self.client.chat.completions.create(
++                model=self.model,
++                messages=[
++                    {"role": "system", "content": system},
++                    {"role": "user", "content": user},
++                ],
++                temperature=0.3,
++            )
++            return resp.choices[0].message.content or ""
++        else:
++            resp = self.client.messages.create(
++                model=self.model,
++                system=system,
++                messages=[{"role": "user", "content": user}],
++                temperature=0.3,
++            )
++            return resp.content[0].text if resp.content else ""
++```
++
++- [ ] **Step 5: Create agents/__init__.py**
++
++```python
++from .base import BaseAgent, ChatAgent, AnalysisResult, ChatContext, ChatResponse
++```
++
++- [ ] **Step 6: Create main.py**
++
++```python
++import os
++from dotenv import load_dotenv
++load_dotenv()
++
++from fastapi import FastAPI
++from fastapi.middleware.cors import CORSMiddleware
++
++app = FastAPI(title="AI Marketing Service")
++
++app.add_middleware(
++    CORSMiddleware,
++    allow_origins=["*"],
++    allow_credentials=True,
++    allow_methods=["*"],
++    allow_headers=["*"],
++)
++
++
++@app.get("/health")
++async def health():
++    return {"status": "ok"}
++
++
++if __name__ == "__main__":
++    import uvicorn
++    uvicorn.run(app, host="0.0.0.0", port=8000)
++```
++
++- [ ] **Step 7: Verify service runs**
++
++```bash
++cd D:\ecommerce-template\ai-service
++pip install -r requirements.txt
++python -c "from agents.base import BaseAgent, ChatAgent; print('OK')"
++```
++Expected: `OK`
++
++- [ ] **Step 8: Commit**
++
++```bash
++git add . && git commit -m "feat: scaffold python ai service with agent interfaces"
++```
++
++---
++
++
+diff --git a/package-lock.json b/package-lock.json
+index 681cf75..9cebce3 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -8,21 +8,21 @@
+       "name": "ecommerce-template",
+       "version": "0.1.0",
+       "dependencies": {
+         "@prisma/client": "^5.14.0",
+         "@stripe/stripe-js": "^3.0.0",
+         "bcryptjs": "^2.4.3",
+         "next": "^14.2.0",
+         "next-auth": "^4.24.0",
+         "react": "^18.3.0",
+         "react-dom": "^18.3.0",
+-        "stripe": "^15.0.0",
++        "stripe": "^22.2.3",
+         "zustand": "^4.5.0"
+       },
+       "devDependencies": {
+         "@types/bcryptjs": "^2.4.0",
+         "@types/node": "^20.0.0",
+         "@types/react": "^18.3.0",
+         "@types/react-dom": "^18.3.0",
+         "autoprefixer": "^10.4.0",
+         "postcss": "^8.4.0",
+         "prisma": "^5.14.0",
+@@ -828,21 +828,23 @@
+       "version": "2.4.6",
+       "resolved": "https://registry.npmjs.org/@types/bcryptjs/-/bcryptjs-2.4.6.tgz",
+       "integrity": "sha512-9xlo6R2qDs5uixm0bcIqCeMCE6HiQsIyel9KQySStiyqNl2tnj2mP3DX1Nf56MD6KMenNNlBBsy3LJ7gUEQPXQ==",
+       "dev": true,
+       "license": "MIT"
+     },
+     "node_modules/@types/node": {
+       "version": "20.19.43",
+       "resolved": "https://registry.npmjs.org/@types/node/-/node-20.19.43.tgz",
+       "integrity": "sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==",
++      "devOptional": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "undici-types": "~6.21.0"
+       }
+     },
+     "node_modules/@types/prop-types": {
+       "version": "15.7.15",
+       "resolved": "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.15.tgz",
+       "integrity": "sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==",
+       "devOptional": true,
+       "license": "MIT"
+@@ -1018,49 +1020,20 @@
+       "version": "1.6.0",
+       "resolved": "https://registry.npmjs.org/busboy/-/busboy-1.6.0.tgz",
+       "integrity": "sha512-8SFQbg/0hQ9xy3UNTB0YEnsNBbWfhf7RtnzpL7TkBiTBRfrQ9Fxcnz7VJsleJpyp6rVLvXiuORqjlHi5q+PYuA==",
+       "dependencies": {
+         "streamsearch": "^1.1.0"
+       },
+       "engines": {
+         "node": ">=10.16.0"
+       }
+     },
+-    "node_modules/call-bind-apply-helpers": {
+-      "version": "1.0.2",
+-      "resolved": "https://registry.npmjs.org/call-bind-apply-helpers/-/call-bind-apply-helpers-1.0.2.tgz",
+-      "integrity": "sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "es-errors": "^1.3.0",
+-        "function-bind": "^1.1.2"
+-      },
+-      "engines": {
+-        "node": ">= 0.4"
+-      }
+-    },
+-    "node_modules/call-bound": {
+-      "version": "1.0.4",
+-      "resolved": "https://registry.npmjs.org/call-bound/-/call-bound-1.0.4.tgz",
+-      "integrity": "sha512-+ys997U96po4Kx/ABpBCqhA9EuxJaQWDQg7295H4hBphv3IZg0boBKuwYpt4YXp6MZ5AmZQnU/tyMTlRpaSejg==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "call-bind-apply-helpers": "^1.0.2",
+-        "get-intrinsic": "^1.3.0"
+-      },
+-      "engines": {
+-        "node": ">= 0.4"
+-      },
+-      "funding": {
+-        "url": "https://github.com/sponsors/ljharb"
+-      }
+-    },
+     "node_modules/camelcase-css": {
+       "version": "2.0.1",
+       "resolved": "https://registry.npmjs.org/camelcase-css/-/camelcase-css-2.0.1.tgz",
+       "integrity": "sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==",
+       "dev": true,
+       "license": "MIT",
+       "engines": {
+         "node": ">= 6"
+       }
+     },
+@@ -1174,71 +1147,37 @@
+       "dev": true,
+       "license": "Apache-2.0"
+     },
+     "node_modules/dlv": {
+       "version": "1.1.3",
+       "resolved": "https://registry.npmjs.org/dlv/-/dlv-1.1.3.tgz",
+       "integrity": "sha512-+HlytyjlPKnIG8XuRG8WvmBP8xs8P71y+SKKS6ZXWoEgLuePxtDoUEiH7WkdePWrQ5JBpE6aoVqfZfJUQkjXwA==",
+       "dev": true,
+       "license": "MIT"
+     },
+-    "node_modules/dunder-proto": {
+-      "version": "1.0.1",
+-      "resolved": "https://registry.npmjs.org/dunder-proto/-/dunder-proto-1.0.1.tgz",
+-      "integrity": "sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "call-bind-apply-helpers": "^1.0.1",
+-        "es-errors": "^1.3.0",
+-        "gopd": "^1.2.0"
+-      },
+-      "engines": {
+-        "node": ">= 0.4"
+-      }
+-    },
+     "node_modules/electron-to-chromium": {
+       "version": "1.5.378",
+       "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.378.tgz",
+       "integrity": "sha512-VinvOAuuPmdD1guEgGv5f2Qp7/vlfqOrUOMYNnOD4wj3pit8kRsQHzfIf6teyUGWo15Tg5+bOJaRunvyltpVWQ==",
+       "dev": true,
+       "license": "ISC"
+     },
+-    "node_modules/es-define-property": {
+-      "version": "1.0.1",
+-      "resolved": "https://registry.npmjs.org/es-define-property/-/es-define-property-1.0.1.tgz",
+-      "integrity": "sha512-e3nRfgfUZ4rNGL232gUgX06QNyyez04KdjFrF+LTRoOXmrOgFKDg4BCdsjW8EnT69eqdYGmRpJwiPVYNrCaW3g==",
+-      "license": "MIT",
+-      "engines": {
+-        "node": ">= 0.4"
+-      }
+-    },
+     "node_modules/es-errors": {
+       "version": "1.3.0",
+       "resolved": "https://registry.npmjs.org/es-errors/-/es-errors-1.3.0.tgz",
+       "integrity": "sha512-Zf5H2Kxt2xjTvbJvP2ZWLEICxA6j+hAmMzIlypy4xcBg1vKVnx89Wy0GbS+kf5cwCVFFzdCFh2XSCFNULS6csw==",
++      "dev": true,
+       "license": "MIT",
+       "engines": {
+         "node": ">= 0.4"
+       }
+     },
+-    "node_modules/es-object-atoms": {
+-      "version": "1.1.2",
+-      "resolved": "https://registry.npmjs.org/es-object-atoms/-/es-object-atoms-1.1.2.tgz",
+-      "integrity": "sha512-HWcBoN6NileqtSydK2FqHbS/LoDd2pqrnQHLyJzBj4kOp/ky2MWMN694xOfkK8/SnUsW2DH7EfyVlydKCsm1Zw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "es-errors": "^1.3.0"
+-      },
+-      "engines": {
+-        "node": ">= 0.4"
+-      }
+-    },
+     "node_modules/esbuild": {
+       "version": "0.28.1",
+       "resolved": "https://registry.npmjs.org/esbuild/-/esbuild-0.28.1.tgz",
+       "integrity": "sha512-HrJrvZv5ayxBzPfwphOoNzkzOIIlifzk0KJrGK2c8R4+LKpMtpYLQeUdjnwjWv/LZlkH2laZk+4w78pi99D4Vw==",
+       "dev": true,
+       "hasInstallScript": true,
+       "license": "MIT",
+       "bin": {
+         "esbuild": "bin/esbuild"
+       },
+@@ -1363,109 +1302,50 @@
+         "darwin"
+       ],
+       "engines": {
+         "node": "^8.16.0 || ^10.6.0 || >=11.0.0"
+       }
+     },
+     "node_modules/function-bind": {
+       "version": "1.1.2",
+       "resolved": "https://registry.npmjs.org/function-bind/-/function-bind-1.1.2.tgz",
+       "integrity": "sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==",
++      "dev": true,
+       "license": "MIT",
+       "funding": {
+         "url": "https://github.com/sponsors/ljharb"
+       }
+     },
+-    "node_modules/get-intrinsic": {
+-      "version": "1.3.0",
+-      "resolved": "https://registry.npmjs.org/get-intrinsic/-/get-intrinsic-1.3.0.tgz",
+-      "integrity": "sha512-9fSjSaos/fRIVIp+xSJlE6lfwhES7LNtKaCBIamHsjr2na1BiABJPo0mOjjz8GJDURarmCPGqaiVg5mfjb98CQ==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "call-bind-apply-helpers": "^1.0.2",
+-        "es-define-property": "^1.0.1",
+-        "es-errors": "^1.3.0",
+-        "es-object-atoms": "^1.1.1",
+-        "function-bind": "^1.1.2",
+-        "get-proto": "^1.0.1",
+-        "gopd": "^1.2.0",
+-        "has-symbols": "^1.1.0",
+-        "hasown": "^2.0.2",
+-        "math-intrinsics": "^1.1.0"
+-      },
+-      "engines": {
+-        "node": ">= 0.4"
+-      },
+-      "funding": {
+-        "url": "https://github.com/sponsors/ljharb"
+-      }
+-    },
+-    "node_modules/get-proto": {
+-      "version": "1.0.1",
+-      "resolved": "https://registry.npmjs.org/get-proto/-/get-proto-1.0.1.tgz",
+-      "integrity": "sha512-sTSfBjoXBp89JvIKIefqw7U2CCebsc74kiY6awiGogKtoSGbgjYE/G/+l9sF3MWFPNc9IcoOC4ODfKHfxFmp0g==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "dunder-proto": "^1.0.1",
+-        "es-object-atoms": "^1.0.0"
+-      },
+-      "engines": {
+-        "node": ">= 0.4"
+-      }
+-    },
+     "node_modules/glob-parent": {
+       "version": "6.0.2",
+       "resolved": "https://registry.npmjs.org/glob-parent/-/glob-parent-6.0.2.tgz",
+       "integrity": "sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==",
+       "dev": true,
+       "license": "ISC",
+       "dependencies": {
+         "is-glob": "^4.0.3"
+       },
+       "engines": {
+         "node": ">=10.13.0"
+       }
+     },
+-    "node_modules/gopd": {
+-      "version": "1.2.0",
+-      "resolved": "https://registry.npmjs.org/gopd/-/gopd-1.2.0.tgz",
+-      "integrity": "sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==",
+-      "license": "MIT",
+-      "engines": {
+-        "node": ">= 0.4"
+-      },
+-      "funding": {
+-        "url": "https://github.com/sponsors/ljharb"
+-      }
+-    },
+     "node_modules/graceful-fs": {
+       "version": "4.2.11",
+       "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.11.tgz",
+       "integrity": "sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==",
+       "license": "ISC"
+     },
+-    "node_modules/has-symbols": {
+-      "version": "1.1.0",
+-      "resolved": "https://registry.npmjs.org/has-symbols/-/has-symbols-1.1.0.tgz",
+-      "integrity": "sha512-1cDNdwJ2Jaohmb3sg4OmKaMBwuC48sYni5HUw2DvsC8LjGTLK9h+eb1X6RyuOHe4hT0ULCW68iomhjUoKUqlPQ==",
+-      "license": "MIT",
+-      "engines": {
+-        "node": ">= 0.4"
+-      },
+-      "funding": {
+-        "url": "https://github.com/sponsors/ljharb"
+-      }
+-    },
+     "node_modules/hasown": {
+       "version": "2.0.4",
+       "resolved": "https://registry.npmjs.org/hasown/-/hasown-2.0.4.tgz",
+       "integrity": "sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==",
++      "dev": true,
+       "license": "MIT",
+       "dependencies": {
+         "function-bind": "^1.1.2"
+       },
+       "engines": {
+         "node": ">= 0.4"
+       }
+     },
+     "node_modules/is-binary-path": {
+       "version": "2.1.0",
+@@ -1592,29 +1472,20 @@
+       "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-6.0.0.tgz",
+       "integrity": "sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==",
+       "license": "ISC",
+       "dependencies": {
+         "yallist": "^4.0.0"
+       },
+       "engines": {
+         "node": ">=10"
+       }
+     },
+-    "node_modules/math-intrinsics": {
+-      "version": "1.1.0",
+-      "resolved": "https://registry.npmjs.org/math-intrinsics/-/math-intrinsics-1.1.0.tgz",
+-      "integrity": "sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==",
+-      "license": "MIT",
+-      "engines": {
+-        "node": ">= 0.4"
+-      }
+-    },
+     "node_modules/merge2": {
+       "version": "1.4.1",
+       "resolved": "https://registry.npmjs.org/merge2/-/merge2-1.4.1.tgz",
+       "integrity": "sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==",
+       "dev": true,
+       "license": "MIT",
+       "engines": {
+         "node": ">= 8"
+       }
+     },
+@@ -1810,32 +1681,20 @@
+     },
+     "node_modules/object-hash": {
+       "version": "2.2.0",
+       "resolved": "https://registry.npmjs.org/object-hash/-/object-hash-2.2.0.tgz",
+       "integrity": "sha512-gScRMn0bS5fH+IuwyIFgnh9zBdo4DV+6GhygmWM9HyNJSgS0hScp1f5vjtm7oIIOiT9trXrShAkLFSc2IqKNgw==",
+       "license": "MIT",
+       "engines": {
+         "node": ">= 6"
+       }
+     },
+-    "node_modules/object-inspect": {
+-      "version": "1.13.4",
+-      "resolved": "https://registry.npmjs.org/object-inspect/-/object-inspect-1.13.4.tgz",
+-      "integrity": "sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==",
+-      "license": "MIT",
+-      "engines": {
+-        "node": ">= 0.4"
+-      },
+-      "funding": {
+-        "url": "https://github.com/sponsors/ljharb"
+-      }
+-    },
+     "node_modules/oidc-token-hash": {
+       "version": "5.2.0",
+       "resolved": "https://registry.npmjs.org/oidc-token-hash/-/oidc-token-hash-5.2.0.tgz",
+       "integrity": "sha512-6gj2m8cJZ+iSW8bm0FXdGF0YhIQbKrfP4yWTNzxc31U6MOjfEmB1rHvlYvxI1B7t7BCi1F2vYTT6YhtQRG4hxw==",
+       "license": "MIT",
+       "engines": {
+         "node": "^10.13.0 || >=12.0.0"
+       }
+     },
+     "node_modules/openid-client": {
+@@ -2106,35 +1965,20 @@
+       "bin": {
+         "prisma": "build/index.js"
+       },
+       "engines": {
+         "node": ">=16.13"
+       },
+       "optionalDependencies": {
+         "fsevents": "2.3.3"
+       }
+     },
+-    "node_modules/qs": {
+-      "version": "6.15.2",
+-      "resolved": "https://registry.npmjs.org/qs/-/qs-6.15.2.tgz",
+-      "integrity": "sha512-Rzq0KEyX/w/tEybncDgdkZrJgVUsUMk3xjh3t5bv3S1HTAtg+uOYt72+ZfwiQwKdysThkTBdL/rTi6HDmX9Ddw==",
+-      "license": "BSD-3-Clause",
+-      "dependencies": {
+-        "side-channel": "^1.1.0"
+-      },
+-      "engines": {
+-        "node": ">=0.6"
+-      },
+-      "funding": {
+-        "url": "https://github.com/sponsors/ljharb"
+-      }
+-    },
+     "node_modules/queue-microtask": {
+       "version": "1.2.3",
+       "resolved": "https://registry.npmjs.org/queue-microtask/-/queue-microtask-1.2.3.tgz",
+       "integrity": "sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==",
+       "dev": true,
+       "funding": [
+         {
+           "type": "github",
+           "url": "https://github.com/sponsors/feross"
+         },
+@@ -2258,120 +2102,52 @@
+     },
+     "node_modules/scheduler": {
+       "version": "0.23.2",
+       "resolved": "https://registry.npmjs.org/scheduler/-/scheduler-0.23.2.tgz",
+       "integrity": "sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ==",
+       "license": "MIT",
+       "dependencies": {
+         "loose-envify": "^1.1.0"
+       }
+     },
+-    "node_modules/side-channel": {
+-      "version": "1.1.1",
+-      "resolved": "https://registry.npmjs.org/side-channel/-/side-channel-1.1.1.tgz",
+-      "integrity": "sha512-6x6dK6zJdpTzF4sQeNYxwtvBzf6Eg4GtlesS94HOvTudUeyK2WXAaIfmDgsyslYrRBeFIlsi54AYsFGUuhmvrQ==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "es-errors": "^1.3.0",
+-        "object-inspect": "^1.13.4",
+-        "side-channel-list": "^1.0.1",
+-        "side-channel-map": "^1.0.1",
+-        "side-channel-weakmap": "^1.0.2"
+-      },
+-      "engines": {
+-        "node": ">= 0.4"
+-      },
+-      "funding": {
+-        "url": "https://github.com/sponsors/ljharb"
+-      }
+-    },
+-    "node_modules/side-channel-list": {
+-      "version": "1.0.1",
+-      "resolved": "https://registry.npmjs.org/side-channel-list/-/side-channel-list-1.0.1.tgz",
+-      "integrity": "sha512-mjn/0bi/oUURjc5Xl7IaWi/OJJJumuoJFQJfDDyO46+hBWsfaVM65TBHq2eoZBhzl9EchxOijpkbRC8SVBQU0w==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "es-errors": "^1.3.0",
+-        "object-inspect": "^1.13.4"
+-      },
+-      "engines": {
+-        "node": ">= 0.4"
+-      },
+-      "funding": {
+-        "url": "https://github.com/sponsors/ljharb"
+-      }
+-    },
+-    "node_modules/side-channel-map": {
+-      "version": "1.0.1",
+-      "resolved": "https://registry.npmjs.org/side-channel-map/-/side-channel-map-1.0.1.tgz",
+-      "integrity": "sha512-VCjCNfgMsby3tTdo02nbjtM/ewra6jPHmpThenkTYh8pG9ucZ/1P8So4u4FGBek/BjpOVsDCMoLA/iuBKIFXRA==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "call-bound": "^1.0.2",
+-        "es-errors": "^1.3.0",
+-        "get-intrinsic": "^1.2.5",
+-        "object-inspect": "^1.13.3"
+-      },
+-      "engines": {
+-        "node": ">= 0.4"
+-      },
+-      "funding": {
+-        "url": "https://github.com/sponsors/ljharb"
+-      }
+-    },
+-    "node_modules/side-channel-weakmap": {
+-      "version": "1.0.2",
+-      "resolved": "https://registry.npmjs.org/side-channel-weakmap/-/side-channel-weakmap-1.0.2.tgz",
+-      "integrity": "sha512-WPS/HvHQTYnHisLo9McqBHOJk2FkHO/tlpvldyrnem4aeQp4hai3gythswg6p01oSoTl58rcpiFAjF2br2Ak2A==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "call-bound": "^1.0.2",
+-        "es-errors": "^1.3.0",
+-        "get-intrinsic": "^1.2.5",
+-        "object-inspect": "^1.13.3",
+-        "side-channel-map": "^1.0.1"
+-      },
+-      "engines": {
+-        "node": ">= 0.4"
+-      },
+-      "funding": {
+-        "url": "https://github.com/sponsors/ljharb"
+-      }
+-    },
+     "node_modules/source-map-js": {
+       "version": "1.2.1",
+       "resolved": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.1.tgz",
+       "integrity": "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==",
+       "license": "BSD-3-Clause",
+       "engines": {
+         "node": ">=0.10.0"
+       }
+     },
+     "node_modules/streamsearch": {
+       "version": "1.1.0",
+       "resolved": "https://registry.npmjs.org/streamsearch/-/streamsearch-1.1.0.tgz",
+       "integrity": "sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==",
+       "engines": {
+         "node": ">=10.0.0"
+       }
+     },
+     "node_modules/stripe": {
+-      "version": "15.12.0",
+-      "resolved": "https://registry.npmjs.org/stripe/-/stripe-15.12.0.tgz",
+-      "integrity": "sha512-slTbYS1WhRJXVB8YXU8fgHizkUrM9KJyrw4Dd8pLEwzKHYyQTIE46EePC2MVbSDZdE24o1GdNtzmJV4PrPpmJA==",
++      "version": "22.2.3",
++      "resolved": "https://registry.npmjs.org/stripe/-/stripe-22.2.3.tgz",
++      "integrity": "sha512-9lrggvLtjO4Ef5WXH4t50ckHJcJgTD72xFB+KJgZCSszAH9zMV1BqU6PwmWbRLdcdX7LK6PbErBapiGK7pIb+g==",
+       "license": "MIT",
+-      "dependencies": {
+-        "@types/node": ">=8.1.0",
+-        "qs": "^6.11.0"
+-      },
+       "engines": {
+-        "node": ">=12.*"
++        "node": ">=18"
++      },
++      "peerDependencies": {
++        "@types/node": ">=18"
++      },
++      "peerDependenciesMeta": {
++        "@types/node": {
++          "optional": true
++        }
+       }
+     },
+     "node_modules/styled-jsx": {
+       "version": "5.1.1",
+       "resolved": "https://registry.npmjs.org/styled-jsx/-/styled-jsx-5.1.1.tgz",
+       "integrity": "sha512-pW7uC1l4mBZ8ugbiZrcIsiIvVx1UmTfw7UkC3Um2tmfUq9Bhk8IiyEIPl6F8agHgjzku6j0xQEZbfA5uSgSaCw==",
+       "license": "MIT",
+       "dependencies": {
+         "client-only": "0.0.1"
+       },
+@@ -2603,20 +2379,21 @@
+         "tsserver": "bin/tsserver"
+       },
+       "engines": {
+         "node": ">=14.17"
+       }
+     },
+     "node_modules/undici-types": {
+       "version": "6.21.0",
+       "resolved": "https://registry.npmjs.org/undici-types/-/undici-types-6.21.0.tgz",
+       "integrity": "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==",
++      "devOptional": true,
+       "license": "MIT"
+     },
+     "node_modules/update-browserslist-db": {
+       "version": "1.2.3",
+       "resolved": "https://registry.npmjs.org/update-browserslist-db/-/update-browserslist-db-1.2.3.tgz",
+       "integrity": "sha512-Js0m9cx+qOgDxo0eMiFGEueWztz+d4+M3rGlmKPT+T4IS/jP4ylw3Nwpu6cpTTP8R1MAC1kF4VbdLt3ARf209w==",
+       "dev": true,
+       "funding": [
+         {
+           "type": "opencollective",
+diff --git a/package.json b/package.json
+index f829b64..1481b6f 100644
+--- a/package.json
++++ b/package.json
+@@ -5,33 +5,33 @@
+   "scripts": {
+     "dev": "next dev",
+     "build": "next build",
+     "start": "next start",
+     "lint": "next lint",
+     "db:push": "prisma db push",
+     "db:generate": "prisma generate",
+     "db:seed": "tsx prisma/seed.ts"
+   },
+   "dependencies": {
++    "@prisma/client": "^5.14.0",
++    "@stripe/stripe-js": "^3.0.0",
++    "bcryptjs": "^2.4.3",
+     "next": "^14.2.0",
++    "next-auth": "^4.24.0",
+     "react": "^18.3.0",
+     "react-dom": "^18.3.0",
+-    "@prisma/client": "^5.14.0",
+-    "next-auth": "^4.24.0",
+-    "@stripe/stripe-js": "^3.0.0",
+-    "stripe": "^15.0.0",
+-    "zustand": "^4.5.0",
+-    "bcryptjs": "^2.4.3"
++    "stripe": "^22.2.3",
++    "zustand": "^4.5.0"
+   },
+   "devDependencies": {
+-    "typescript": "^5.4.0",
++    "@types/bcryptjs": "^2.4.0",
+     "@types/node": "^20.0.0",
+     "@types/react": "^18.3.0",
+     "@types/react-dom": "^18.3.0",
++    "autoprefixer": "^10.4.0",
++    "postcss": "^8.4.0",
+     "prisma": "^5.14.0",
+     "tailwindcss": "^3.4.0",
+-    "postcss": "^8.4.0",
+-    "autoprefixer": "^10.4.0",
+     "tsx": "^4.0.0",
+-    "@types/bcryptjs": "^2.4.0"
++    "typescript": "^5.4.0"
+   }
+ }
+diff --git a/src/app/api/checkout/route.ts b/src/app/api/checkout/route.ts
+new file mode 100644
+index 0000000..2062105
+--- /dev/null
++++ b/src/app/api/checkout/route.ts
+@@ -0,0 +1,24 @@
++import { NextResponse } from "next/server";
++import { getStripe } from "@/lib/stripe";
++
++export async function POST(req: Request) {
++  try {
++    const { items } = await req.json();
++    const session = await getStripe().checkout.sessions.create({
++      mode: "payment",
++      line_items: items.map((item: { name: string; price: number; quantity: number }) => ({
++        price_data: {
++          currency: "usd",
++          product_data: { name: item.name },
++          unit_amount: item.price,
++        },
++        quantity: item.quantity,
++      })),
++      success_url: `${req.headers.get("origin")}/cart?success=true`,
++      cancel_url: `${req.headers.get("origin")}/cart?canceled=true`,
++    });
++    return NextResponse.json({ url: session.url });
++  } catch {
++    return NextResponse.json({ error: "Checkout failed" }, { status: 500 });
++  }
++}
+diff --git a/src/app/cart/page.tsx b/src/app/cart/page.tsx
+new file mode 100644
+index 0000000..bdd871b
+--- /dev/null
++++ b/src/app/cart/page.tsx
+@@ -0,0 +1,33 @@
++"use client";
++import { useCartStore } from "@/store/cart-store";
++import CartItem from "@/components/storefront/CartItem";
++import Link from "next/link";
++
++export default function CartPage() {
++  const { items, total, clearCart } = useCartStore();
++
++  if (items.length === 0) {
++    return (
++      <div className="max-w-3xl mx-auto px-4 py-16 text-center">
++        <h1 className="text-2xl font-bold mb-4">Your Cart is Empty</h1>
++        <Link href="/products" className="text-primary-600 hover:underline">Continue Shopping</Link>
++      </div>
++    );
++  }
++
++  return (
++    <div className="max-w-3xl mx-auto px-4 py-8">
++      <h1 className="text-2xl font-bold mb-8">Shopping Cart</h1>
++      {items.map((item) => <CartItem key={item.id} item={item} />)}
++      <div className="mt-8 text-right">
++        <p className="text-xl font-bold">Total: ${(total() / 100).toFixed(2)}</p>
++        <div className="flex gap-4 justify-end mt-4">
++          <button onClick={clearCart} className="px-4 py-2 border rounded">Clear</button>
++          <Link href="/checkout" className="px-6 py-2 bg-primary-600 text-white rounded hover:bg-primary-700">
++            Checkout
++          </Link>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/app/checkout/page.tsx b/src/app/checkout/page.tsx
+new file mode 100644
+index 0000000..55f92f1
+--- /dev/null
++++ b/src/app/checkout/page.tsx
+@@ -0,0 +1,48 @@
++"use client";
++import { useCartStore } from "@/store/cart-store";
++import { useRouter } from "next/navigation";
++import { useState } from "react";
++
++export default function CheckoutPage() {
++  const { items, total } = useCartStore();
++  const router = useRouter();
++  const [loading, setLoading] = useState(false);
++
++  const handleCheckout = async () => {
++    setLoading(true);
++    const res = await fetch("/api/checkout", {
++      method: "POST",
++      body: JSON.stringify({
++        items: items.map((i) => ({ name: i.name, price: i.price, quantity: i.quantity })),
++      }),
++    });
++    const data = await res.json();
++    if (data.url) window.location.href = data.url;
++    setLoading(false);
++  };
++
++  if (items.length === 0) {
++    router.push("/cart");
++    return null;
++  }
++
++  return (
++    <div className="max-w-lg mx-auto px-4 py-8">
++      <h1 className="text-2xl font-bold mb-8">Checkout</h1>
++      {items.map((item) => (
++        <div key={item.id} className="flex justify-between py-2 border-b">
++          <span>{item.name} x{item.quantity}</span>
++          <span>${((item.price * item.quantity) / 100).toFixed(2)}</span>
++        </div>
++      ))}
++      <p className="text-xl font-bold mt-4">Total: ${(total() / 100).toFixed(2)}</p>
++      <button
++        onClick={handleCheckout}
++        disabled={loading}
++        className="w-full mt-6 bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 disabled:opacity-50"
++      >
++        {loading ? "Processing..." : "Pay with Stripe"}
++      </button>
++    </div>
++  );
++}
+diff --git a/src/components/storefront/CartItem.tsx b/src/components/storefront/CartItem.tsx
+new file mode 100644
+index 0000000..b07fa82
+--- /dev/null
++++ b/src/components/storefront/CartItem.tsx
+@@ -0,0 +1,27 @@
++"use client";
++import { CartItem as CartItemType, useCartStore } from "@/store/cart-store";
++
++export default function CartItem({ item }: { item: CartItemType }) {
++  const { updateQuantity, removeItem } = useCartStore();
++
++  return (
++    <div className="flex gap-4 py-4 border-b">
++      <div className="w-20 h-20 bg-gray-100 rounded">
++        {item.images[0] && <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover rounded" />}
++      </div>
++      <div className="flex-1">
++        <h3 className="font-semibold">{item.name}</h3>
++        <p className="text-primary-600">${(item.price / 100).toFixed(2)}</p>
++        <div className="flex items-center gap-2 mt-2">
++          <button onClick={() => updateQuantity(item.id, Math.max(0, item.quantity - 1))}
++            className="w-8 h-8 border rounded">-</button>
++          <span>{item.quantity}</span>
++          <button onClick={() => updateQuantity(item.id, item.quantity + 1)}
++            className="w-8 h-8 border rounded">+</button>
++          <button onClick={() => removeItem(item.id)}
++            className="ml-4 text-sm text-red-500">Remove</button>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/lib/stripe.ts b/src/lib/stripe.ts
+new file mode 100644
+index 0000000..62fac40
+--- /dev/null
++++ b/src/lib/stripe.ts
+@@ -0,0 +1,20 @@
++import Stripe from "stripe";
++
++let _stripe: Stripe | null = null;
++
++export function getStripe(): Stripe {
++  if (!_stripe) {
++    if (!process.env.STRIPE_SECRET_KEY) {
++      throw new Error("STRIPE_SECRET_KEY is not set");
++    }
++    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
++      apiVersion: "2024-11-20.acacia" as any,
++      typescript: true,
++    });
++  }
++  return _stripe;
++}
++
++export function getStripePublishableKey() {
++  return process.env.STRIPE_PUBLISHABLE_KEY || "";
++}
+diff --git a/src/store/cart-store.ts b/src/store/cart-store.ts
+index 94d1f85..05d243e 100644
+--- a/src/store/cart-store.ts
++++ b/src/store/cart-store.ts
+@@ -1,24 +1,36 @@
+ import { create } from "zustand";
++import { persist } from "zustand/middleware";
+ 
+-interface CartItem {
+-  id: string;
+-  name: string;
+-  slug: string;
+-  price: number;
+-  images: string[];
+-  quantity: number;
++export interface CartItem {
++  id: string; name: string; slug: string; price: number; images: string[]; quantity: number;
+ }
+ 
+-interface CartStore {
++interface CartState {
+   items: CartItem[];
+   addItem: (item: CartItem) => void;
+   removeItem: (id: string) => void;
++  updateQuantity: (id: string, qty: number) => void;
+   clearCart: () => void;
++  total: () => number;
+ }
+ 
+-export const useCartStore = create<CartStore>((set) => ({
+-  items: [],
+-  addItem: (item) => set((state) => ({ items: [...state.items, item] })),
+-  removeItem: (id) => set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
+-  clearCart: () => set({ items: [] }),
+-}));
++export const useCartStore = create<CartState>()(
++  persist(
++    (set, get) => ({
++      items: [],
++      addItem: (item) => {
++        const existing = get().items.find((i) => i.id === item.id);
++        if (existing) {
++          set({ items: get().items.map((i) => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i) });
++        } else {
++          set({ items: [...get().items, item] });
++        }
++      },
++      removeItem: (id) => set({ items: get().items.filter((i) => i.id !== id) }),
++      updateQuantity: (id, qty) => set({ items: get().items.map((i) => i.id === id ? { ...i, quantity: qty } : i) }),
++      clearCart: () => set({ items: [] }),
++      total: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
++    }),
++    { name: "cart-storage" }
++  )
++);
