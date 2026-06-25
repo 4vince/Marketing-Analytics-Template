@@ -1,22 +1,21 @@
-// Contact Us page — static contact form (name, email, message) with no backend handler.
 export default function ContactPage() {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-16">
-      <h1 className="text-3xl font-bold mb-6">Contact Us</h1>
-      <form className="space-y-4">
+    <div className="max-w-3xl mx-auto px-4 py-20">
+      <h1 className="text-4xl font-bold text-primary-500 uppercase tracking-wide mb-8">Contact Us</h1>
+      <form className="space-y-5">
         <div>
-          <label className="block mb-1">Name</label>
-          <input className="w-full border rounded px-3 py-2" required />
+          <label className="block mb-1 text-[#cccccc]">Name</label>
+          <input className="w-full bg-[#1e1e1e] border border-[#333] text-[#e0e0e0] rounded px-3 py-2 focus:border-primary-500 focus:outline-none" required />
         </div>
         <div>
-          <label className="block mb-1">Email</label>
-          <input type="email" className="w-full border rounded px-3 py-2" required />
+          <label className="block mb-1 text-[#cccccc]">Email</label>
+          <input type="email" className="w-full bg-[#1e1e1e] border border-[#333] text-[#e0e0e0] rounded px-3 py-2 focus:border-primary-500 focus:outline-none" required />
         </div>
         <div>
-          <label className="block mb-1">Message</label>
-          <textarea className="w-full border rounded px-3 py-2" rows={5} required />
+          <label className="block mb-1 text-[#cccccc]">Message</label>
+          <textarea className="w-full bg-[#1e1e1e] border border-[#333] text-[#e0e0e0] rounded px-3 py-2 focus:border-primary-500 focus:outline-none" rows={5} required />
         </div>
-        <button type="submit" className="bg-primary-600 text-white px-6 py-2 rounded">Send</button>
+        <button type="submit" className="bg-primary-500 text-white px-8 py-3 rounded-xl font-semibold hover:bg-primary-600 transition-colors">Send Message</button>
       </form>
     </div>
   );

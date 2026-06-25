@@ -1,11 +1,16 @@
-// Tailwind CSS configuration — scans src/**/*.{ts,tsx} and defines custom primary color palette.
 import type { Config } from "tailwindcss";
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        primary: { "50": "#eff6ff", "100": "#dbeafe", "500": "#3b82f6", "600": "#2563eb", "700": "#1d4ed8" },
+        primary: {
+          "50": "#fef2f2",
+          "100": "#fee2e2",
+          "500": "#f24139",
+          "600": "#d6302a",
+          "700": "#b91c1c",
+        },
       },
     },
   },

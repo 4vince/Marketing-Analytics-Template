@@ -1,4 +1,64 @@
-/* Global stylesheet — imports Tailwind CSS base, components, and utilities layers. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #141414;
+  color: #e0e0e0;
+}
+
+section {
+  scroll-margin-top: 80px;
+}
+
+@keyframes autoShow {
+  from {
+    opacity: 0.5;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.autoShow {
+  animation: autoShow both;
+  animation-timeline: view();
+}
+
+@keyframes imageReveal {
+  from {
+    filter: saturate(0) contrast(4) brightness(0.1) blur(4px);
+    opacity: 0;
+    transform: scale(0.8) translateY(4rem);
+  }
+  to {
+    filter: none;
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.imageReveal {
+  animation: imageReveal 1.5s both;
+  animation-timeline: view(50% 50%);
+}
+
+@keyframes fadeInAnim {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fadeIn {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeInAnim 1s forwards;
+  animation-delay: 0.2s;
+}
