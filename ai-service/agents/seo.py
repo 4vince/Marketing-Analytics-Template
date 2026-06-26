@@ -1,4 +1,4 @@
-# SEO analysis agent — scores product SEO on title tag, meta description, URL slug, and heading structure.
+# SEO analysis agent — scores product SEO and evaluates title, meta description, and URL optimization.
 import json
 
 from .base import BaseAgent, AnalysisResult
@@ -20,19 +20,23 @@ class SEOAgent(BaseAgent):
                 suggestions=[]
             )
         prompt = f"""
-Analyze SEO for this product page:
+Analyze this product page for SEO effectiveness.
 
 Name: {content.get('name', '')}
 Meta Title: {content.get('meta_title', '')}
 Meta Description: {content.get('meta_description', '')}
+Product Title: {content.get('name', '')}
+Product Description: {content.get('description', '')}
 Category: {content.get('category', '')}
 Slug: {content.get('slug', '')}
 
 Score from 0-100 on:
-1. Title tag quality (length, keyword inclusion)
-2. Meta description quality
-3. URL slug optimization
-4. Heading structure signals
+1. Title tag quality (length, keyword inclusion, relevance)
+2. Meta description quality and search intent alignment
+3. Description keyword richness and readability
+4. URL slug optimization
+
+Provide SEO findings and actionable suggestions, but do not rewrite the title or description here.
 
 Return JSON: {{"score": int, "findings": [{{"issue": str, "severity": str, "detail": str}}], "suggestions": [{{"area": str, "suggestion": str}}]}}
 """

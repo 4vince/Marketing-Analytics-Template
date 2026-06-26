@@ -3,3 +3,5 @@ from .base import BaseAgent, ChatAgent, AnalysisResult, ChatContext, ChatRespons
 from .content_quality import ContentQualityAgent
 from .seo import SEOAgent
 from .product_page import ProductPageAgent
+from .content_optimization import ContentOptimizationAgent
+from .product_preference import ProductPreferenceReportAgent

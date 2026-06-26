@@ -1,25 +1,25 @@
-# LLM client abstraction — supports OpenAI (gpt-4o) and Anthropic (claude) providers via environment config.
+# LLM client abstraction — supports Opencode and Anthropic providers via environment config.
 import os
-from openai import OpenAI
+from opencode import opencode
 from anthropic import Anthropic
 
 
 class LLMClient:
     def __init__(self):
-        provider = os.getenv("LLM_PROVIDER", "openai")
-        model = os.getenv("LLM_MODEL", "gpt-4o")
+        provider = os.getenv("LLM_PROVIDER", "opencode")
+        model = os.getenv("LLM_MODEL", "opencode/big-pickle")
 
-        if provider == "openai":
-            self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        if provider == "opencode":
+            self.client = opencode(api_key=os.getenv("OPENCODE_API_KEY"))
             self.model = model
-            self.provider = "openai"
+            self.provider = "opencode"
         elif provider == "anthropic":
             self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
             self.model = model
             self.provider = "anthropic"
 
     def chat(self, system: str, user: str) -> str:
-        if self.provider == "openai":
+        if self.provider == "opencode":
             resp = self.client.chat.completions.create(
                 model=self.model,
                 messages=[

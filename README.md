@@ -21,7 +21,7 @@ A full-featured e-commerce storefront with an admin panel and AI-powered marketi
 | Payments | Stripe Checkout + Webhooks |
 | Auth | NextAuth (credentials, JWT) |
 | State | Zustand (cart, localStorage persistence) |
-| AI Service | Python FastAPI, OpenAI / Anthropic LLMs |
+| AI Service | Python FastAPI, Opencode / Anthropic LLMs |
 
 ## Project Structure
 
@@ -48,7 +48,7 @@ A full-featured e-commerce storefront with an admin panel and AI-powered marketi
 ├── ai-service/
 │   ├── main.py            # FastAPI entry point (routes: /health, /chat, /analyze)
 │   ├── orchestrator.py    # Runs all analysis agents on product data
-│   ├── llm_client.py      # LLM abstraction (OpenAI / Anthropic)
+│   ├── llm_client.py      # LLM abstraction (Opencode / Anthropic)
 │   ├── agents/            # Analysis agents (SEO, ContentQuality, ProductPage, Chat, QuarterlyReport)
 │   └── tests/             # Pytest test suite
 ├── docker-compose.yml     # Orchestrates all 3 services
@@ -62,7 +62,7 @@ A full-featured e-commerce storefront with an admin panel and AI-powered marketi
 - Python 3.12+ (for AI service)
 - PostgreSQL 16 (or Docker for Postgres)
 - Stripe account (for payments)
-- OpenAI or Anthropic API key (for AI features)
+- Opencode or Anthropic API key (for AI features)
 
 ## Getting Started (Local Development)
 
@@ -131,10 +131,10 @@ Edit `ai-service/.env` with your LLM provider credentials:
 
 | Variable | Description |
 |----------|-------------|
-| `OPENAI_API_KEY` | OpenAI API key (if using OpenAI) |
+| `OPENCODE_API_KEY` | Opencode API key (if using Opencode) |
 | `ANTHROPIC_API_KEY` | Anthropic API key (if using Claude) |
-| `LLM_PROVIDER` | `openai` or `anthropic` |
-| `LLM_MODEL` | `gpt-4o` or `claude-sonnet-4-20250514` |
+| `LLM_PROVIDER` | `opencode` or `anthropic` |
+| `LLM_MODEL` | `opencode/big-pickle` or `claude-sonnet-4-20250514` |
 
 Install and run:
 

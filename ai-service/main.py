@@ -24,6 +24,7 @@ async def health():
 
 
 from agents.quarterly_report import QuarterlyReportAgent
+from agents.product_preference import ProductPreferenceReportAgent
 from orchestrator import Orchestrator
 from agents.chat import StorefrontChatAgent
 from agents.base import ChatContext
@@ -73,6 +74,13 @@ async def analyze_product(data: dict):
 @app.post("/analyze/report")
 async def generate_report(data: dict):
     agent = QuarterlyReportAgent()
+    result = agent.analyze(data)
+    return result.model_dump()
+
+
+@app.post("/analyze/report/preferences")
+async def generate_preference_report(data: dict):
+    agent = ProductPreferenceReportAgent()
     result = agent.analyze(data)
     return result.model_dump()
 
