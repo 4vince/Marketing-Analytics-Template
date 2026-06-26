@@ -1,6 +1,6 @@
 # LLM client abstraction — supports Opencode and Anthropic providers via environment config.
 import os
-from opencode import opencode
+from openai import openAI
 from anthropic import Anthropic
 
 
