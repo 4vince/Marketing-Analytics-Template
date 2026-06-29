@@ -17,11 +17,18 @@ export async function POST() {
     where: { createdAt: { gte: ninetyDaysAgo } },
   });
 
-  const aiRes = await fetch(`${AI_SERVICE}/analyze/report`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ analyses }),
-  });
+  let aiRes: Response;
+  try {
+    aiRes = await fetch(`${AI_SERVICE}/analyze/report`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ analyses }),
+      signal: AbortSignal.timeout(30000),
+    });
+  } catch {
+    return NextResponse.json({ error: "AI service is unavailable. Please try again later." }, { status: 503 });
+  }
+  if (!aiRes.ok) return NextResponse.json({ error: "AI service error" }, { status: 502 });
   const result = await aiRes.json();
 
   await prisma.quarterlyReport.create({

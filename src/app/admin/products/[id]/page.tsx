@@ -8,7 +8,7 @@ export default async function EditProductPage({ params }: { params: { id: string
   if (!product) notFound();
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-8">Edit Product</h1>
+      <h1 className="text-2xl font-display font-semibold text-brand-warm-white mb-8">Edit Product</h1>
       <ProductForm initial={{
         ...product,
         images: Array.isArray(product.images) ? product.images as string[] : [],

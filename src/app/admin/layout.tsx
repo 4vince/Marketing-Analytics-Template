@@ -7,7 +7,7 @@ import Sidebar from "@/components/admin/Sidebar";
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    redirect("/api/auth/signin");
+    redirect("/auth/signin?callbackUrl=/admin");
   }
   return (
     <div className="flex min-h-screen bg-brand-pitch">

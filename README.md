@@ -198,3 +198,109 @@ The Python AI service runs 4 analysis agents:
 - **Product Page Agent** — Scores description completeness, pricing, CTA, social proof, images (0-100)
 - **Chat Agent** — Answers visitor questions using the product catalog as context
 - **Quarterly Report Agent** — Aggregates 90 days of analysis into a summary with prioritized suggestions
+
+## 🚀 Vercel Deployment (Storefront Only)
+
+The storefront (Next.js) can be deployed to Vercel independently. The AI service (Python FastAPI) runs separately — see the AI Service Deployment section below.
+
+### Prerequisites
+
+1. **A hosted PostgreSQL database** — Options:
+   - [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres) (easiest, directly integrated)
+   - [Neon](https://neon.tech) (generous free tier)
+   - [Supabase](https://supabase.com) (includes PostgreSQL + auth)
+   - [Railway](https://railway.app) or [Render](https://render.com)
+
+2. **A Stripe account** — For payment processing (or skip for a product-browsing-only demo)
+
+3. **A GitHub repository** — Vercel imports from GitHub
+
+### Step 1: Push to GitHub
+
+```bash
+git init
+git add .
+git commit -m "Initial commit: storefront deployment"
+git branch -M main
+git remote add origin https://github.com/your-username/your-repo.git
+git push -u origin main
+```
+
+### Step 2: Import to Vercel
+
+1. Go to [vercel.com/new](https://vercel.com/new) and import your GitHub repo
+2. Vercel auto-detects Next.js — keep the default build settings
+3. In **Environment Variables**, add:
+
+| Variable | Value | Notes |
+|----------|-------|-------|
+| `DATABASE_URL` | `postgresql://...` | Your hosted PostgreSQL connection string. **For serverless**: add `?pgbouncer=true&connection_limit=1` to the URL |
+| `NEXTAUTH_SECRET` | `openssl rand -base64 32` | Generate a strong random string |
+| `NEXTAUTH_URL` | `https://your-app.vercel.app` | Your Vercel domain (set after first deploy, or use the preview URL) |
+| `STRIPE_SECRET_KEY` | `sk_test_...` | From Stripe dashboard |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_test_...` | From Stripe dashboard |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_...` | From Stripe CLI or Stripe dashboard webhook setup |
+| `AI_SERVICE_URL` | (optional) | Set once you deploy the AI service |
+
+4. Click **Deploy**
+
+### Step 3: Apply Database Migrations
+
+After deployment, run migrations against your hosted database:
+
+```bash
+npx prisma migrate deploy
+```
+
+> **Note**: Prisma migration files are already included in the repo (`prisma/migrations/`). Vercel runs `npx prisma generate` during build automatically, but **does not run migrations**. You need to run `npx prisma migrate deploy` manually (locally pointing to your prod DB, or via a GitHub Action).
+
+### Step 4: Seed Initial Data
+
+Once the database is migrated:
+
+```bash
+npx prisma db seed
+```
+
+This creates the admin user (`admin@store.com` / `admin123`) and sample products.
+
+### Step 5: Verify
+
+- Visit `https://your-app.vercel.app` — you should see the storefront
+- Visit `https://your-app.vercel.app/admin` — sign in with `admin@store.com` / `admin123`
+- Test the cart and Stripe checkout flow
+
+### Stripe Webhook for Production
+
+In your Stripe dashboard → **Developers → Webhooks**, add an endpoint:
+
+```
+https://your-app.vercel.app/api/webhooks/stripe
+```
+
+Select the `checkout.session.completed` event. Copy the signing secret and add it as `STRIPE_WEBHOOK_SECRET` in Vercel environment variables.
+
+### What Works Without the AI Service
+
+The storefront is fully functional without the AI service:
+- ✅ Product browsing and search
+- ✅ Shopping cart and Stripe checkout
+- ✅ Admin dashboard, product CRUD, order management
+- ❌ AI chat widget (shows "unavailable" message)
+- ❌ Product analysis / marketing reports (admin features show error)
+
+### Deploying the AI Service Separately
+
+The AI service is a FastAPI Python app that can be deployed to any platform supporting Python web services:
+
+- **[Railway](https://railway.app)** — Docker-based, easy FastAPI deploys
+- **[Render](https://render.com)** — Web service with Python support (free tier available)
+- **[Fly.io](https://fly.io)** — Docker-based, global edge deployment
+
+See `ai-service/` for the FastAPI source and `Dockerfile` for the container build instructions.
+
+### Vercel-Specific Notes
+
+- **Serverless functions**: All API routes (`/api/*`) run as serverless functions. They have a 10s timeout on the Hobby plan (60s on Pro) — the AI analysis endpoint may need the Pro plan for large products.
+- **Connection pooling**: PostgreSQL connections from serverless functions must use a pooler. Add `?pgbouncer=true&connection_limit=1` to your `DATABASE_URL` or use Vercel Postgres which includes built-in pooling.
+- **Static vs Dynamic**: The homepage is server-rendered (due to database queries). Other marketing pages (`/about`, `/contact`) are statically generated.
