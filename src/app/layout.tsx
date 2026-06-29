@@ -5,20 +5,27 @@ import "./globals.css";
 import Header from "@/components/storefront/Header";
 import Footer from "@/components/storefront/Footer";
 import ChatWidget from "@/components/storefront/ChatWidget";
+import { ToastProvider } from "@/components/ui/Toast";
+import VantaBackground from "@/components/storefront/VantaBackground";
 
 export const metadata: Metadata = {
-  title: "Store",
+  title: "Chickenoodle",
   description: "E-commerce template",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col bg-[#141414] text-[#e0e0e0]">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <ChatWidget />
+      <body className="min-h-screen flex flex-col bg-[#141414] text-[#e0e0e0] relative">
+        <VantaBackground />
+        <div className="relative z-10 flex flex-col min-h-screen">
+          <ToastProvider>
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <ChatWidget />
+          </ToastProvider>
+        </div>
       </body>
     </html>
   );

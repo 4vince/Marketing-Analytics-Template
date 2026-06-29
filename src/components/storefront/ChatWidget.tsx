@@ -49,7 +49,7 @@ export default function ChatWidget() {
       {open && (
         <div className="bg-[#1e1e1e] border border-[#333] rounded-lg shadow-xl w-80 h-96 flex flex-col mb-2">
           <div className="bg-primary-500 text-white px-4 py-3 rounded-t-lg font-semibold">
-            Store Assistant
+            Chickenoodle Assistant
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
             {messages.map((msg, i) => (

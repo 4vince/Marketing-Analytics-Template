@@ -44,9 +44,11 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="hero-image imageReveal flex-shrink-0 w-[35%] flex justify-end">
-            <div className="w-full aspect-square bg-[#1e1e1e] rounded-2xl flex items-center justify-center text-6xl text-primary-500">
-              &#9733;
-            </div>
+            <img
+              src="/images/landing-hero.png"
+              alt="Landing page hero"
+              className="w-full aspect-square object-cover rounded-2xl shadow-lg"
+            />
           </div>
         </div>
         <div className="media-icons z-10 fixed right-8 top-1/3 flex flex-col gap-5 text-primary-500 text-2xl">

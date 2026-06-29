@@ -5,9 +5,9 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full flex justify-between items-center px-8 py-1 bg-[#141414] transition-all duration-500">
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
-          S
+          C
         </div>
-        <span className="text-primary-500 text-xl font-bold uppercase tracking-wide">Store</span>
+        <span className="text-primary-500 text-xl font-bold uppercase tracking-wide">Chickenoodle</span>
       </div>
       <nav className="flex gap-8 mr-12">
         {["Products", "About", "Contact", "Cart"].map((label) => (
