@@ -10,9 +10,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/api/auth/signin");
   }
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-brand-pitch">
       <Sidebar />
-      <main className="flex-1 p-4 sm:p-8 bg-gray-50 min-w-0">{children}</main>
+      <main className="flex-1 p-4 sm:p-8 min-w-0 bg-brand-pitch">{children}</main>
     </div>
   );
 }

@@ -28,10 +28,10 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <div className="text-6xl mb-6 text-primary-500">&#9733;</div>
-        <h1 className="text-3xl font-bold text-white mb-4">Your Cart is Empty</h1>
-        <p className="text-[#888] mb-8">Looks like you haven&apos;t added anything yet.</p>
-        <Link href="/products" className="bg-primary-500 text-white px-8 py-3 rounded-xl font-semibold hover:bg-primary-600 transition-colors no-underline inline-block">
+        <div className="text-6xl mb-6 text-primary-500 font-display">✦</div>
+        <h1 className="text-3xl font-display font-semibold text-brand-warm-white mb-4">Your Cart is Empty</h1>
+        <p className="text-brand-muted mb-8">Looks like you haven&apos;t added anything yet.</p>
+        <Link href="/products" className="bg-primary-500 text-brand-warm-white px-8 py-3 rounded-xl font-semibold hover:bg-primary-600 transition-colors no-underline inline-block shadow-lg shadow-primary-500/20">
           Continue Shopping
         </Link>
       </div>
@@ -40,15 +40,26 @@ export default function CartPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-white mb-8">Shopping Cart</h1>
-      {items.map((item) => <CartItem key={item.id} item={item} />)}
+      <h1 className="text-3xl font-display font-semibold text-brand-warm-white mb-8">Shopping Cart</h1>
+      <div className="divide-y divide-brand-fence">
+        {items.map((item) => <CartItem key={item.id} item={item} />)}
+      </div>
       <div className="mt-8 text-right">
-        <p className="text-2xl font-bold text-white">Total: <span className="text-primary-500">${(total() / 100).toFixed(2)}</span></p>
+        <div className="flex items-center justify-end gap-2 mb-2">
+          <span className="text-brand-muted text-sm font-body">Total:</span>
+          <span className="text-2xl font-mono font-semibold text-brand-warm-white">${(total() / 100).toFixed(2)}</span>
+        </div>
         <div className="flex gap-4 justify-end mt-4">
-          <button onClick={clearCart} className="px-6 py-2 border border-[#444] text-[#e0e0e0] rounded-xl hover:bg-[#1e1e1e] transition-colors">
+          <button
+            onClick={clearCart}
+            className="px-5 py-2.5 border border-brand-fence text-brand-muted rounded-xl hover:bg-brand-risen hover:text-brand-warm-white transition-all text-sm font-medium"
+          >
             Clear Cart
           </button>
-          <Link href="/checkout" className="px-6 py-2 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition-colors no-underline">
+          <Link
+            href="/checkout"
+            className="px-6 py-2.5 bg-primary-500 text-brand-warm-white rounded-xl font-semibold hover:bg-primary-600 transition-all no-underline shadow-lg shadow-primary-500/20"
+          >
             Proceed to Checkout
           </Link>
         </div>

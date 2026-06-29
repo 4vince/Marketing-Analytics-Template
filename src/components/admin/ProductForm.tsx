@@ -40,46 +40,54 @@ export default function ProductForm({ initial }: ProductFormProps) {
     router.refresh();
   };
 
+  const inputClass =
+    "w-full bg-brand-risen border border-brand-fence rounded-xl px-4 py-2.5 text-sm text-brand-warm-white placeholder-brand-muted/50 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/30 transition-all";
+  const labelClass = "block text-sm font-medium text-brand-muted mb-1.5";
+
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
+    <form onSubmit={handleSubmit} className="max-w-lg space-y-5 bg-brand-clay border border-brand-fence rounded-xl p-6">
       <div>
-        <label className="block mb-1">Name</label>
+        <label className={labelClass}>Name</label>
         <input name="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="w-full border rounded px-3 py-2" required />
+          className={inputClass} placeholder="Product name" required />
       </div>
       <div>
-        <label className="block mb-1">Description</label>
+        <label className={labelClass}>Description</label>
         <textarea name="description" value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
-          className="w-full border rounded px-3 py-2" rows={4} required />
+          className={`${inputClass} resize-y min-h-[100px]`} placeholder="Describe the product..." rows={4} required />
       </div>
       <div>
-        <label className="block mb-1">Price ($)</label>
+        <label className={labelClass}>Price ($)</label>
         <input name="price" type="number" step="0.01" value={form.price}
-          onChange={(e) => setForm({ ...form, price: e.target.value })} className="w-full border rounded px-3 py-2" required />
+          onChange={(e) => setForm({ ...form, price: e.target.value })}
+          className={inputClass} placeholder="0.00" required />
       </div>
       <div>
-        <label className="block mb-1">Category</label>
+        <label className={labelClass}>Category</label>
         <input name="category" value={form.category}
-          onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full border rounded px-3 py-2" />
+          onChange={(e) => setForm({ ...form, category: e.target.value })}
+          className={inputClass} placeholder="e.g. electronics, clothing" />
       </div>
       <div>
-        <label className="block mb-1">Image URLs (comma-separated)</label>
+        <label className={labelClass}>Image URLs (comma-separated)</label>
         <input name="images" value={form.images}
-          onChange={(e) => setForm({ ...form, images: e.target.value })} className="w-full border rounded px-3 py-2" />
+          onChange={(e) => setForm({ ...form, images: e.target.value })}
+          className={inputClass} placeholder="https://..." />
       </div>
       <div>
-        <label className="block mb-1">Status</label>
+        <label className={labelClass}>Status</label>
         <select name="status" value={form.status}
-          onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full border rounded px-3 py-2">
+          onChange={(e) => setForm({ ...form, status: e.target.value })}
+          className={inputClass}>
           <option value="draft">Draft</option>
           <option value="active">Active</option>
           <option value="archived">Archived</option>
         </select>
       </div>
       <button type="submit" disabled={loading}
-        className="bg-primary-600 text-white px-6 py-2 rounded disabled:opacity-50">
-        {loading ? "Saving..." : "Save Product"}
+        className="w-full bg-primary-500 text-brand-warm-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-primary-600 disabled:opacity-40 transition-all shadow-lg shadow-primary-500/20">
+        {loading ? "Saving..." : initial?.id ? "Update Product" : "Save Product"}
       </button>
     </form>
   );

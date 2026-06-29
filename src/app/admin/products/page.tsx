@@ -9,44 +9,62 @@ export default async function AdminProductsPage() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <h1 className="text-2xl font-bold">Products</h1>
-        <Link href="/admin/products/new" className="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors inline-block">
-          + Add Product
+        <h1 className="text-2xl font-display font-semibold text-brand-warm-white">Products</h1>
+        <Link
+          href="/admin/products/new"
+          className="inline-flex items-center gap-2 bg-primary-500 text-brand-warm-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-600 transition-all shadow-lg shadow-primary-500/20"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          Add Product
         </Link>
       </div>
+
       {products.length === 0 ? (
-        <div className="bg-white rounded-lg border p-12 text-center">
-          <p className="text-gray-500 text-lg mb-2">No products yet.</p>
-          <p className="text-gray-400 text-sm mb-6">Create your first product to get started.</p>
-          <Link href="/admin/products/new" className="bg-primary-600 text-white px-6 py-2 rounded hover:bg-primary-700 transition-colors inline-block">
+        <div className="bg-brand-clay border border-brand-fence rounded-xl p-12 text-center space-y-3">
+          <p className="text-3xl font-display text-brand-muted">✦</p>
+          <p className="text-brand-warm-white font-medium">No products yet.</p>
+          <p className="text-sm text-brand-muted">Create your first product to get started.</p>
+          <Link
+            href="/admin/products/new"
+            className="inline-block mt-4 bg-primary-500 text-brand-warm-white px-6 py-2 rounded-xl text-sm font-medium hover:bg-primary-600 transition-all shadow-lg shadow-primary-500/20"
+          >
             Add Product
           </Link>
         </div>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-lg border">
-          <table className="w-full min-w-[450px]">
-            <thead className="border-b">
+        <div className="overflow-x-auto bg-brand-clay border border-brand-fence rounded-xl">
+          <table className="w-full min-w-[550px]">
+            <thead className="border-b border-brand-fence">
               <tr>
-                <th className="text-left p-3">Name</th>
-                <th className="text-left p-3">Price</th>
-                <th className="text-left p-3">Status</th>
-                <th className="text-left p-3">Actions</th>
+                <th className="text-left p-4 text-xs font-medium text-brand-muted uppercase tracking-wider">Name</th>
+                <th className="text-left p-4 text-xs font-medium text-brand-muted uppercase tracking-wider">Price</th>
+                <th className="text-left p-4 text-xs font-medium text-brand-muted uppercase tracking-wider">Status</th>
+                <th className="text-left p-4 text-xs font-medium text-brand-muted uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>
               {products.map((p) => (
-                <tr key={p.id} className="border-b hover:bg-gray-50">
-                  <td className="p-3">{p.name}</td>
-                  <td className="p-3">${(p.price / 100).toFixed(2)}</td>
-                  <td className="p-3">
-                    <span className={`px-2 py-1 rounded text-sm ${
-                      p.status === "active" ? "bg-green-100 text-green-700" :
-                      p.status === "draft" ? "bg-yellow-100 text-yellow-700" :
-                      "bg-gray-100 text-gray-600"
-                    }`}>{p.status}</span>
+                <tr key={p.id} className="border-b border-brand-fence hover:bg-brand-risen/50 transition-colors">
+                  <td className="p-4 text-sm text-brand-warm-white">{p.name}</td>
+                  <td className="p-4 font-mono text-sm text-brand-warm-white">${(p.price / 100).toFixed(2)}</td>
+                  <td className="p-4">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      p.status === "active"
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        : p.status === "draft"
+                        ? "bg-brand-yolk/10 text-brand-yolk border border-brand-yolk/20"
+                        : "bg-brand-fence/30 text-brand-muted border border-brand-fence"
+                    }`}>
+                      {p.status}
+                    </span>
                   </td>
-                  <td className="p-3 space-x-3">
-                    <Link href={`/admin/products/${p.id}`} className="text-primary-600 hover:text-primary-700">Edit</Link>
+                  <td className="p-4 flex items-center gap-3">
+                    <Link href={`/admin/products/${p.id}`} className="text-xs text-brand-muted hover:text-primary-500 transition-colors font-medium">
+                      Edit
+                    </Link>
+                    <span className="text-brand-fence">|</span>
                     <DeleteButton productId={p.id} />
                   </td>
                 </tr>

@@ -41,34 +41,34 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-white mb-8">Checkout</h1>
+      <h1 className="text-3xl font-display font-semibold text-brand-warm-white mb-8">Checkout</h1>
 
       {error && (
-        <div className="bg-red-600/20 border border-red-600 text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
+        <div className="bg-primary-500/10 border border-primary-500/30 text-primary-500 px-4 py-3 rounded-xl mb-6 text-sm">
           {error}
         </div>
       )}
 
-      <div className="bg-[#1e1e1e] rounded-xl p-6 border border-[#333]">
+      <div className="bg-brand-clay rounded-xl p-6 border border-brand-fence">
         {items.map((item) => (
-          <div key={item.id} className="flex justify-between py-2 border-b border-[#333] last:border-b-0">
-            <span className="text-[#e0e0e0]">{item.name} <span className="text-[#888]">x{item.quantity}</span></span>
-            <span className="text-white">${((item.price * item.quantity) / 100).toFixed(2)}</span>
+          <div key={item.id} className="flex justify-between py-2.5 border-b border-brand-fence last:border-b-0">
+            <span className="text-brand-warm-white text-sm">{item.name} <span className="text-brand-muted">x{item.quantity}</span></span>
+            <span className="text-brand-warm-white font-mono text-sm">${((item.price * item.quantity) / 100).toFixed(2)}</span>
           </div>
         ))}
-        <div className="flex justify-between pt-4 mt-2 border-t border-[#333]">
-          <span className="text-lg font-bold text-white">Total</span>
-          <span className="text-lg font-bold text-primary-500">${(total() / 100).toFixed(2)}</span>
+        <div className="flex justify-between pt-4 mt-2 border-t border-brand-fence">
+          <span className="text-base font-semibold text-brand-warm-white font-display">Total</span>
+          <span className="text-base font-mono font-semibold text-primary-500">${(total() / 100).toFixed(2)}</span>
         </div>
       </div>
 
       {/* Loading overlay */}
       {loading && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
-          <div className="bg-[#1e1e1e] rounded-xl p-8 border border-[#333] text-center max-w-sm mx-4">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm">
+          <div className="bg-brand-clay rounded-xl p-8 border border-brand-fence text-center max-w-sm mx-4">
             <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-white font-semibold text-lg">Redirecting to secure checkout...</p>
-            <p className="text-[#888] text-sm mt-2">You&apos;ll be taken to Stripe to complete payment.</p>
+            <p className="text-brand-warm-white font-semibold text-lg font-display">Redirecting to secure checkout...</p>
+            <p className="text-brand-muted text-sm mt-2">You&apos;ll be taken to Stripe to complete payment.</p>
           </div>
         </div>
       )}
@@ -76,7 +76,7 @@ export default function CheckoutPage() {
       <button
         onClick={handleCheckout}
         disabled={loading}
-        className="w-full mt-6 bg-primary-500 text-white py-3 rounded-xl font-semibold hover:bg-primary-600 disabled:opacity-50 transition-colors text-lg"
+        className="w-full mt-6 bg-primary-500 text-brand-warm-white py-3 rounded-xl font-semibold hover:bg-primary-600 disabled:opacity-50 transition-all shadow-lg shadow-primary-500/20 text-base"
       >
         {loading ? "Redirecting..." : "Pay with Stripe"}
       </button>

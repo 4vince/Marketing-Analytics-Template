@@ -15,7 +15,10 @@ export default function DeleteButton({ productId }: { productId: string }) {
   };
 
   return (
-    <button onClick={handleDelete} className="text-red-600 hover:text-red-800 ml-2">
+    <button
+      onClick={handleDelete}
+      className="text-xs text-brand-muted hover:text-primary-500 transition-colors font-medium"
+    >
       Delete
     </button>
   );

@@ -33,7 +33,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ addToast }}>
       {children}
       {/* Toast container */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none">
+      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 items-end pointer-events-none">
         {toasts.map((toast) => (
           <ToastItem key={toast.id} toast={toast} onDone={() => removeToast(toast.id)} />
         ))}
@@ -48,23 +48,32 @@ function ToastItem({ toast, onDone }: { toast: Toast; onDone: () => void }) {
     return () => clearTimeout(timer);
   }, [onDone]);
 
-  const bgColor =
-    toast.type === "success" ? "bg-green-600" :
-    toast.type === "error" ? "bg-red-600" :
-    "bg-primary-500";
+  const config = {
+    success: { bg: "bg-emerald-600/90 border-emerald-500/40", icon: "✓" },
+    error: { bg: "bg-primary-600/90 border-primary-500/40", icon: "✗" },
+    info: { bg: "bg-brand-risen border-brand-fence", icon: "ℹ" },
+  };
 
-  const icon =
-    toast.type === "success" ? "✓" :
-    toast.type === "error" ? "✗" :
-    "ℹ";
+  const { bg, icon } = config[toast.type];
 
   return (
     <div
-      className={`pointer-events-auto ${bgColor} text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 text-sm font-medium animate-[fadeInAnim_0.3s_ease-out]`}
+      className={`
+        pointer-events-auto ${bg} backdrop-blur-sm text-brand-warm-white
+        px-5 py-3 rounded-xl shadow-xl border
+        flex items-center gap-3 text-sm font-medium
+        animate-slide-up
+      `}
     >
-      <span className="text-base">{icon}</span>
+      <span className="text-base flex-shrink-0">{icon}</span>
       <span>{toast.message}</span>
-      <button onClick={onDone} className="ml-2 text-white/80 hover:text-white text-lg leading-none">&times;</button>
+      <button
+        onClick={onDone}
+        className="ml-2 text-brand-muted hover:text-brand-warm-white text-lg leading-none transition-colors flex-shrink-0"
+        aria-label="Dismiss"
+      >
+        &times;
+      </button>
     </div>
   );
 }

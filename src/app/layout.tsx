@@ -1,4 +1,4 @@
-// Root layout — renders Header, page content, Footer, and ChatWidget for all pages.
+// Root layout — renders grain overlay, Header, page content, Footer, and ChatWidget for all pages.
 import type { Metadata } from "next";
 // @ts-ignore: allow importing global CSS in app layout
 import "./globals.css";
@@ -16,7 +16,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col bg-[#141414] text-[#e0e0e0] relative">
+      <body className="min-h-screen flex flex-col bg-brand-pitch text-brand-warm-white relative">
+        <div className="grain-overlay" />
         <VantaBackground />
         <div className="relative z-10 flex flex-col min-h-screen">
           <ToastProvider>

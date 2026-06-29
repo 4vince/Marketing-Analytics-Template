@@ -38,25 +38,26 @@ export default async function ProductsPage({ searchParams }: Props) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Products</h1>
-      <div className="flex gap-4 mb-8">
+      <h1 className="text-3xl font-display font-semibold text-brand-warm-white mb-6">Products</h1>
+      <div className="flex flex-col sm:flex-row gap-4 mb-8">
         <form className="flex gap-2">
           <input
             name="search"
             defaultValue={searchParams.search}
             placeholder="Search products..."
-            className="border rounded px-3 py-2"
+            className="bg-brand-risen border border-brand-fence rounded-xl px-4 py-2 text-sm text-brand-warm-white placeholder-brand-muted/50 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/30 transition-all"
           />
-          <button type="submit" className="bg-primary-600 text-white px-4 py-2 rounded">
+          <button type="submit"
+            className="bg-primary-500 text-brand-warm-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-600 transition-all shadow-lg shadow-primary-500/20">
             Search
           </button>
         </form>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {categories.map((c) => (
             <Link
               key={c.category}
               href={`/products?category=${c.category}`}
-              className="px-3 py-2 border rounded hover:bg-gray-50"
+              className="px-3 py-1.5 rounded-lg border border-brand-fence text-sm text-brand-muted hover:text-brand-warm-white hover:bg-brand-risen hover:border-primary-500/30 transition-all"
             >
               {c.category}
             </Link>
