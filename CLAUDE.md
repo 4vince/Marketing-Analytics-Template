@@ -43,10 +43,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 ### AI Service (`ai-service/.env`)
 | Variable | Description |
 |----------|-------------|
+| `OPENCODE_API_KEY` | Opencode API key (if using Opencode) |
+| `OPENCODE_BASE_URL` | Opencode API base URL (default: `https://opencode.ai/zen/v1`) |
 | `OPENAI_API_KEY` | OpenAI API key (if using OpenAI) |
 | `ANTHROPIC_API_KEY` | Anthropic API key (if using Claude) |
-| `LLM_PROVIDER` | `openai` or `anthropic` |
-| `LLM_MODEL` | Model identifier (e.g., `gpt-4o`, `claude-sonnet-4-20250514`) |
+| `LLM_PROVIDER` | `opencode`, `openai`, or `anthropic` |
+| `LLM_MODEL` | Model identifier (e.g., `big-pickle`, `claude-sonnet-4-6`) |
 
 ## 🏗️ Project Structure
 

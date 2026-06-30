@@ -132,9 +132,10 @@ Edit `ai-service/.env` with your LLM provider credentials:
 | Variable | Description |
 |----------|-------------|
 | `OPENCODE_API_KEY` | Opencode API key (if using Opencode) |
+| `OPENCODE_BASE_URL` | Opencode API base URL (default: `https://opencode.ai/zen/v1`) |
 | `ANTHROPIC_API_KEY` | Anthropic API key (if using Claude) |
 | `LLM_PROVIDER` | `opencode` or `anthropic` |
-| `LLM_MODEL` | `opencode/big-pickle` or `claude-sonnet-4-20250514` |
+| `LLM_MODEL` | `big-pickle` or `claude-sonnet-4-20250514` |
 
 Install and run:
 

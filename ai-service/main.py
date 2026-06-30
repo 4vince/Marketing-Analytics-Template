@@ -27,6 +27,7 @@ from agents.quarterly_report import QuarterlyReportAgent
 from agents.product_preference import ProductPreferenceReportAgent
 from orchestrator import Orchestrator
 from agents.chat import StorefrontChatAgent
+from agents.admin_chat import AdminChatAgent
 from agents.base import ChatContext
 
 orchestrator = Orchestrator()
@@ -53,6 +54,17 @@ async def chat_websocket(websocket: WebSocket, conversation_id: str):
 @app.post("/chat/{conversation_id}")
 async def chat_http(conversation_id: str, data: dict):
     agent = StorefrontChatAgent()
+    ctx = ChatContext(
+        conversation_id=conversation_id,
+        product_catalog=data.get("catalog", []),
+    )
+    response = await agent.respond(data.get("message", ""), ctx)
+    return {"message": response.message}
+
+
+@app.post("/chat/admin/{conversation_id}")
+async def admin_chat_http(conversation_id: str, data: dict):
+    agent = AdminChatAgent()
     ctx = ChatContext(
         conversation_id=conversation_id,
         product_catalog=data.get("catalog", []),

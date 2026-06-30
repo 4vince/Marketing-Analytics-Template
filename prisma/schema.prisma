@@ -115,3 +115,54 @@ model ChatMessage {
 
   @@map("chat_messages")
 }
+
+model TrafficSource {
+  id        String   @id @default(cuid())
+  source    String
+  visits    Int
+  orders    Int
+  revenue   Int      @map("revenue")
+  date      DateTime
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("traffic_sources")
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  channel     String
+  spend       Int
+  impressions Int
+  clicks      Int
+  conversions Int
+  revenue     Int
+  date        DateTime
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("campaigns")
+}
+
+model SearchQueryData {
+  id          String   @id @default(cuid())
+  query       String
+  impressions Int
+  clicks      Int
+  avgPosition Float?   @map("avg_position")
+  date        DateTime
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("search_query_data")
+}
+
+model SeoRanking {
+  id           String   @id @default(cuid())
+  keyword      String
+  page         String
+  position     Int
+  searchVolume Int?     @map("search_volume")
+  date         DateTime
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("seo_rankings")
+}

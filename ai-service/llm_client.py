@@ -1,25 +1,35 @@
-# LLM client abstraction — supports Opencode and Anthropic providers via environment config.
+# LLM client abstraction — supports OpenCode, OpenAI, and Anthropic providers via environment config.
+import asyncio
 import os
-from openai import openAI
+from openai import OpenAI
 from anthropic import Anthropic
 
 
 class LLMClient:
     def __init__(self):
         provider = os.getenv("LLM_PROVIDER", "opencode")
-        model = os.getenv("LLM_MODEL", "opencode/big-pickle")
+        model = os.getenv("LLM_MODEL", "big-pickle")
 
         if provider == "opencode":
-            self.client = opencode(api_key=os.getenv("OPENCODE_API_KEY"))
+            self.client = OpenAI(
+                api_key=os.getenv("OPENCODE_API_KEY"),
+                base_url=os.getenv("OPENCODE_BASE_URL", "https://opencode.ai/zen/v1"),
+            )
             self.model = model
             self.provider = "opencode"
+        elif provider == "openai":
+            self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            self.model = model
+            self.provider = "openai"
         elif provider == "anthropic":
             self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
             self.model = model
             self.provider = "anthropic"
+        else:
+            raise ValueError(f"Unsupported LLM provider: {provider}")
 
     def chat(self, system: str, user: str) -> str:
-        if self.provider == "opencode":
+        if self.provider in ("opencode", "openai"):
             resp = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
@@ -29,7 +39,7 @@ class LLMClient:
                 temperature=0.3,
             )
             return resp.choices[0].message.content or ""
-        else:
+        else:  # anthropic
             resp = self.client.messages.create(
                 model=self.model,
                 system=system,
@@ -37,3 +47,7 @@ class LLMClient:
                 temperature=0.3,
             )
             return resp.content[0].text if resp.content else ""
+
+    async def chat_async(self, system: str, user: str) -> str:
+        """Async version of chat() — runs the synchronous call in a thread pool."""
+        return await asyncio.to_thread(self.chat, system, user)
