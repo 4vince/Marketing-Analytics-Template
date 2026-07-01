@@ -100,7 +100,8 @@ class ChatAgent(ABC):
         try:
             from llm_client import LLMClient
             self.llm = LLMClient()
-        except Exception:
+        except Exception as e:
+            print(f"[BaseAgent] LLM init failed: {type(e).__name__}: {e}")
             self.llm = None
 
     @abstractmethod
@@ -118,11 +119,12 @@ class ChatAgent(ABC):
                 "Chat service is currently unavailable. Please try again later."
             )
 
-        for _ in range(self.max_retries + 1):
+        for attempt in range(self.max_retries + 1):
             try:
                 result = await self.llm.chat_async(system_prompt, user_message)
                 return ChatResponse(message=result)
-            except Exception:
+            except Exception as e:
+                print(f"[ChatAgent] LLM attempt {attempt + 1}/{self.max_retries + 1} failed: {type(e).__name__}: {e}")
                 continue
 
         return self._fallback_response(
